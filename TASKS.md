@@ -61,17 +61,17 @@
   - Дія: `/security-review`. Окремо спробуй обійти allowlist (кодування шляху, `~`, змінні, пробіли, Unicode).
   - Приймання: знайдені обходи виправлені й покриті тестами.
 
-- [ ] **T1.4 `hooks/guard.mjs` і `hooks.json`** (план-спершу)
+- [x] **T1.4 `hooks/guard.mjs` і `hooks.json`** (план-спершу)
   - Залежності: T0.2, T1.1.
   - Промпт: «Реалізуй `hooks/guard.mjs` і `hooks/hooks.json` за 4.20: PreToolUse для `Read`, `Write`, `Edit`, `Bash`. Блокує шляхи всередині коренів із `~/.motion-flow/roots.json`, `rm`/`mv` поза `work/`, `git push`, `git reset --hard`, `git clean -fd`, `git checkout --force`, прямий запуск AE/ExtendScript (`afterfx`, `osascript` з `DoScriptFile`, `aerender`) поза `ae-run`/`ae-dump`/`ae-render-frame`. Зрозумілі повідомлення про відмову. Тести (`node:test`) на кожне правило, включно з обхідними формами команд.»
   - Приймання: тести проходять; hook реально спрацьовує в Claude Code (перевір вручну однією забороненою командою).
 
-- [ ] **T1.5 Шаблон проєктного `settings.json`**
+- [x] **T1.5 Шаблон проєктного `settings.json`**
   - Залежності: T0.2, T1.4.
   - Промпт: «Створи `templates/settings.project.json` і `templates/gitignore.project` за розділом 11: marketplace, enabledPlugins, `permissions.deny` (прямі Read/Write/Edit по Drive-шляху, `trash_file`, `update_file`, `share_file`, небезпечні git-команди). Додай `templates/roots.example.json`.»
   - Приймання: JSON валідний, схема збігається з нотаткою T0.2.
 
-- [ ] **T1.6 `deps.json` і скіл `doctor`**
+- [x] **T1.6 `deps.json` і скіл `doctor`**
   - Залежності: T1.1, T1.5.
   - Промпт: «Реалізуй `deps.json` (4.24) і `skills/doctor/SKILL.md` (4.18) з допоміжним скриптом перевірки. Таблиця ок/відсутнє/стара версія; команди встановлення для macOS і Windows; нічого не ставить; прапор `--flow`. Перевіряє також конфіг `drive-gate`, deny-правила, версії плагінів. Перевірка `ae-run --ping` додається після T2.2.»
   - Приймання: скрипт перевірки має тести на розбір `deps.json` і порівняння версій; `doctor` нічого не змінює на диску.

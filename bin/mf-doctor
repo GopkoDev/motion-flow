@@ -1,0 +1,24 @@
+#!/usr/bin/env node
+import { formatReport, runDoctor } from '../lib/doctor.mjs';
+
+const args = process.argv.slice(2);
+const option = (name) => {
+  const index = args.indexOf(name);
+  return index === -1 ? null : args[index + 1] ?? null;
+};
+const json = args.includes('--json');
+
+try {
+  const projectDir = option('--project') ?? process.cwd();
+  const flow = option('--flow');
+  const report = await runDoctor({
+    flow,
+    projectDir,
+    flowDirs: [option('--flows-dir'), `${projectDir}/.claude/skills`].filter(Boolean),
+  });
+  process.stdout.write(json ? `${JSON.stringify(report, null, 2)}\n` : `${formatReport(report)}\n`);
+  process.exitCode = report.ok ? 0 : 1;
+} catch (error) {
+  process.stderr.write(`doctor: ${error.message}\n`);
+  process.exitCode = 2;
+}

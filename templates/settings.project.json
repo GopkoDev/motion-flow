@@ -1,0 +1,34 @@
+{
+  "extraKnownMarketplaces": {
+    "motion": {
+      "source": {
+        "source": "github",
+        "repo": "GopkoDev/motion-flow"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "motion-flow@motion": true
+  },
+  "permissions": {
+    "deny": [
+      "Read(//REPLACE/WITH/ABSOLUTE/DRIVE/ROOT/**)",
+      "Edit(//REPLACE/WITH/ABSOLUTE/DRIVE/ROOT/**)",
+      "Edit(~/.motion-flow/**)",
+      "mcp__claude_ai_Google_Drive__trash_file",
+      "mcp__claude_ai_Google_Drive__update_file",
+      "mcp__claude_ai_Google_Drive__share_file",
+      "mcp__claude_ai_Google_Drive__create_file",
+      "mcp__claude_ai_Google_Drive__copy_file"
+    ],
+    "ask": [
+      "Bash(git push)",
+      "Bash(git push *)",
+      "Bash(git reset --hard)",
+      "Bash(git reset --hard *)",
+      "Bash(git clean -f*)",
+      "Bash(git checkout --force*)",
+      "Bash(git checkout -f*)"
+    ]
+  }
+}
