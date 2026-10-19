@@ -20,7 +20,7 @@ Before starting, read `${CLAUDE_PLUGIN_ROOT}/skills/_shared/gating.md`, `safety.
    - Drive project: `drive-gate info`, then `drive-gate fetch <alias> <path> --to work/` for the `.aep`. Run `ae-dump --project work/<path> --out work/dumps/source.json`, then fetch the linked media: `drive-gate fetch <alias> <path> --to work/ --overwrite --with-deps --deps-from work/dumps/source.json`.
    - No-Drive project: the files should already be in `work/`. If one is missing, ask the designer to copy it there.
 6. **Snapshot the project.** `ae-dump --project work/<path>.aep --out .motion/snapshots/project-map-<YYYYMMDD-HHMMSS>.json`. Read it. Everything you plan must be based on this dump, not on guesses about names, sizes or layers.
-7. **Choose the working copy name.** `aep-version work/<path>.aep` prints the next free version name; this goes into `project_copy:`. The copy itself is made by `build`, not now.
+7. **Choose the working copy name.** `aep-version work/<path>.aep --naming <studio rules>/rules/naming.md` prints the next free version name; this goes into `project_copy:`. `--naming` makes it use the studio's `version_regex`; leave it out when no studio rules are loaded. The copy itself is made by `build`, not now.
 8. **Write `.motion/plan.md`** from `${CLAUDE_PLUGIN_ROOT}/templates/plan.md`, with the Write tool, `status: draft`:
    - `task_id` equals the task's `id`. `needs:` lists the tools the steps use.
    - `## Steps`: one row per atomic change. Each row has the target (comp / layer / property, by NAME), the change (concrete values), the expected result (something that can be seen in the dump or in a frame), the frame to check (comp and time in seconds), and the criteria it serves (`AC` ids in the `Criteria` column).

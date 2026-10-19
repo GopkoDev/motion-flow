@@ -246,6 +246,13 @@ test('deliver names the project file in work/out/ from project_copy, which alrea
   assert.match(text, /cp -n /);
 });
 
+test('plan and deliver pass the studio naming rules to aep-version, so version_regex is used', () => {
+  for (const name of ['plan', 'deliver']) {
+    const text = readFileSync(fileURLToPath(new URL(`../skills/${name}/SKILL.md`, import.meta.url)), 'utf8');
+    assert.match(text, /aep-version [^`]*--naming <studio rules>\/rules\/naming\.md/, name);
+  }
+});
+
 test('the independent-review doc holds both prompts and the rules for a sub-agent', () => {
   const text = readFileSync(fileURLToPath(new URL('../skills/_shared/independent-review.md', import.meta.url)), 'utf8');
   for (const phrase of ['Prompt for `intake`', 'Prompt for `check`', 'NO_FINDINGS', 'cite its evidence', 'read-only', 'never pick the friendlier verdict silently']) assert.ok(text.includes(phrase), phrase);
