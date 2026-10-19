@@ -1,6 +1,2 @@
 motion-flow
 Copyright (c) 2026 Dmytro Hopko
-
-Inspired by Spec-Driven Development (SDD) by Kyrylo Genkov
-(https://github.com/genkovich/sdd): gated stages, shared _shared/ files,
-and the handoff block idea. No SDD code is copied.
