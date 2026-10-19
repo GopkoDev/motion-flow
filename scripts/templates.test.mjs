@@ -239,6 +239,13 @@ test('intake, plan and check tell the agent to self-check and, for intake and ch
   assert.match(skill('check'), /NOT_VERIFIED/);
 });
 
+test('deliver names the project file in work/out/ from project_copy, which already starts with work/', () => {
+  const text = readFileSync(fileURLToPath(new URL('../skills/deliver/SKILL.md', import.meta.url)), 'utf8');
+  assert.doesNotMatch(text, /work\/<project_copy>/, 'project_copy is already a path under work/');
+  assert.match(text, /aep-version <project_copy> --dir work\/out/);
+  assert.match(text, /cp -n /);
+});
+
 test('the independent-review doc holds both prompts and the rules for a sub-agent', () => {
   const text = readFileSync(fileURLToPath(new URL('../skills/_shared/independent-review.md', import.meta.url)), 'utf8');
   for (const phrase of ['Prompt for `intake`', 'Prompt for `check`', 'NO_FINDINGS', 'cite its evidence', 'read-only', 'never pick the friendlier verdict silently']) assert.ok(text.includes(phrase), phrase);

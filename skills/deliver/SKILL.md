@@ -18,7 +18,7 @@ Before starting, read `${CLAUDE_PLUGIN_ROOT}/skills/_shared/gating.md`, `safety.
    - the project file (the result copy `project_copy`): usually yes;
    - still frames (the check frames or new ones): yes or no;
    - **a rendered video: ask the designer whether to render one.** If no, skip the video.
-4. **Project file.** Name it by the naming rules (`aep-version work/<project_copy>` gives the next free version name). Copy the result copy into `work/out/` under that name with `cp`. Never overwrite a file that exists.
+4. **Project file.** Name it by the naming rules: `aep-version <project_copy> --dir work/out` (`project_copy` already starts with `work/`; `--dir work/out` makes the tool skip names already taken there). Copy the result copy to the `path` it prints with `cp -n <project_copy> <path>`. Never overwrite a file that exists: if the target appeared in the meantime, run `aep-version` again.
 5. **Frames.** Copy the frames the designer wants into `work/out/`, named by the rules.
 6. **Video, only if the designer said yes.**
    - If the command `ae-export` exists, use it with the settings from `delivery` (format, codec, size, audio) and write into `work/out/`.
