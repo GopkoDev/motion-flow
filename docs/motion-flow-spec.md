@@ -545,7 +545,7 @@ This section records how the implementation differs from the first edition of th
 2. Refusal reasons: `file_missing`, `task_not_ready`, `plan_not_approved`, `plan_changed_after_approval`, `task_mismatch`, `build_log_missing`, `build_log_invalid`, `build_failed`, `check_not_approved`; `approve` also has `plan_incomplete`, `check_incomplete`.
 3. `mf-gate approve` always shows the Claude Code confirmation dialog (`guard`), and writing the approval fields (`status: approved`, `approved: true`, `approved_at`, `plan_sha256`) with file tools is forbidden.
 4. `build.log.jsonl` is written only by `ae-run --step`; for runs that did not reach the script (timeout, refusal) a line with `ok: false` is written too.
-5. `.motion/` holds one task; a new one begins after `mf-gate archive [--abandon]` (moves the artifacts to `.motion/archive/<id>/`, deletes nothing, because `mv`/`rm` are blocked for the agent).
+5. `.motion/` holds one task; a new one begins after `mf-gate archive [--abandon]` (moves the artifacts and the task's `jsx/` scripts to `.motion/archive/<id>/`, deletes nothing, because `mv`/`rm` are blocked for the agent).
 6. `deliver.md` (the format was not defined in the spec): `task_id`, `status: delivered`, `delivered_at`; a table of files (size, sha256); `## Where to put them`; open questions. There is a `.motion/changelog.md`.
 7. Video export: `deliver` asks the designer whether to render. There is no automatic `ae-export` yet: the designer exports in AE into `work/out/` with the settings from `delivery.md`, and `deliver` checks the file (`ffprobe`, if present). Checksums: `mf-sum`.
 

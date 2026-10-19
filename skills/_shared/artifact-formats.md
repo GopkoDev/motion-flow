@@ -71,7 +71,7 @@ Exceptions to the studio rules for this project. One entry per exception: the ru
 
 ## Starting a new task
 
-`.motion/` holds one task at a time. Before a new task, run `mf-gate archive` (after `deliver`) or `mf-gate archive --abandon` (a task that is dropped, only if the designer says so). It moves `task.md`, `plan.md`, `build.log.jsonl`, `check.md`, `deliver.md` and `snapshots/` into `.motion/archive/<task id>/` and deletes nothing. `state.json`, `drive.json` and `overrides.md` stay. `mf-gate archive --park` sets an unfinished task aside (for example while a flow is rehearsed) and marks it; `mf-gate restore [<task id>]` puts it back byte for byte, refuses while another task is in `.motion/`, and without an id lists what can be restored. Do not use `mv` or `rm` for this; the guard hook blocks them.
+`.motion/` holds one task at a time. Before a new task, run `mf-gate archive` (after `deliver`) or `mf-gate archive --abandon` (a task that is dropped, only if the designer says so). It moves `task.md`, `plan.md`, `build.log.jsonl`, `check.md`, `deliver.md`, `snapshots/` and the project's `jsx/` (the task's scripts) into `.motion/archive/<task id>/` and deletes nothing. `state.json`, `drive.json` and `overrides.md` stay. `mf-gate archive --park` sets an unfinished task aside (for example while a flow is rehearsed) and marks it; `mf-gate restore [<task id>]` puts it back byte for byte, refuses while another task is in `.motion/`, and without an id lists what can be restored. Do not use `mv` or `rm` for this; the guard hook blocks them.
 
 ## Structural self-check
 
