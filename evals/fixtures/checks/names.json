@@ -1,0 +1,4 @@
+[
+  { "id": "comp-names", "type": "comp_name", "pattern": "^(FINAL|PRE|BRAND)_[A-Za-z0-9_]+$" },
+  { "id": "no-default-names", "type": "default_names" }
+]

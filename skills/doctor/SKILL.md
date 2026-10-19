@@ -13,12 +13,14 @@ Read-only health check. It never installs, edits or deletes anything.
 1. Run the checker from the project folder:
    - everything: `mf-doctor`
    - only what one flow needs: `mf-doctor --flow <flow-name>` (add `--flows-dir <path>` if the flow lives outside `.claude/skills/`)
+   - also try After Effects itself: add `--ping-ae` (starts a small script in After Effects through `ae-run --ping`; it creates files under `work/.ipc` and may open After Effects, so use it only when the designer wants to verify the scripting setup)
    - machine-readable: add `--json`
    If `mf-doctor` is not found, run `node "${CLAUDE_PLUGIN_ROOT}/bin/mf-doctor"` instead (on Windows this form is the normal one).
 2. Show the designer the table as it is, then explain it in Ukrainian in a few short lines:
    - `ok`: nothing to do.
    - `MISSING` or `OLD VERSION`: give the install command from the report for their system and ask them to run it themselves.
-   - `check by hand`: the tool cannot be checked by a command yet (After Effects, whisper); say what to look at.
+   - `check by hand`: the tool cannot be checked by a command (say what to look at). After Effects is checked for being installed; if it is installed but scripts fail, suggest `mf-doctor --ping-ae`.
+   - `PROBLEM` under `after effects ping`: quote the detail; it names the After Effects setting or macOS permission to change.
    - `PROBLEM` under `drive-gate config` or `project settings.json`: quote the listed detail and say which file to fix.
 3. Do not run any install command, do not edit `~/.motion-flow/roots.json` or `.claude/settings.json`. A person makes those changes.
 4. End with the next command to run, for example `/motion-flow:intake`, or "fix the items above and run doctor again".

@@ -1,0 +1,121 @@
+{
+  "ae": {
+    "version": "24.1.0"
+  },
+  "project": {
+    "path": "/work/spring_v07.aep",
+    "bitsPerChannel": 8
+  },
+  "footage": [
+    {
+      "name": "hero.mov",
+      "path": "/work/media/hero.mov",
+      "missing": false
+    },
+    {
+      "name": "logo.png",
+      "path": "/work/media/logo.png",
+      "missing": false
+    }
+  ],
+  "fonts": [
+    "Montserrat-Bold"
+  ],
+  "comps": [
+    {
+      "id": 1,
+      "name": "FINAL_Spring_1920x1080",
+      "width": 1920,
+      "height": 1080,
+      "fps": 30,
+      "duration": 12,
+      "layers": [
+        {
+          "index": 1,
+          "name": "Headline",
+          "type": "text",
+          "inPoint": 0,
+          "outPoint": 12,
+          "parent": null,
+          "enabled": true,
+          "locked": false,
+          "transform": {
+            "position": [
+              960,
+              540
+            ],
+            "scale": [
+              100,
+              100
+            ],
+            "rotation": 0,
+            "opacity": 100
+          },
+          "effects": [],
+          "expressions": {},
+          "keyframes": {}
+        },
+        {
+          "index": 2,
+          "name": "BG_Gradient",
+          "type": "solid",
+          "inPoint": 0,
+          "outPoint": 12,
+          "parent": null,
+          "enabled": true,
+          "locked": false,
+          "transform": {
+            "position": [
+              960,
+              540
+            ],
+            "scale": [
+              100,
+              100
+            ],
+            "rotation": 0,
+            "opacity": 100
+          },
+          "effects": [],
+          "expressions": {},
+          "keyframes": {}
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "PRE_CTA_Button",
+      "width": 400,
+      "height": 120,
+      "fps": 23.976,
+      "duration": 4,
+      "layers": [
+        {
+          "index": 1,
+          "name": "Button_BG",
+          "type": "shape",
+          "inPoint": 0,
+          "outPoint": 12,
+          "parent": null,
+          "enabled": true,
+          "locked": false,
+          "transform": {
+            "position": [
+              960,
+              540
+            ],
+            "scale": [
+              100,
+              100
+            ],
+            "rotation": 0,
+            "opacity": 100
+          },
+          "effects": [],
+          "expressions": {},
+          "keyframes": {}
+        }
+      ]
+    }
+  ]
+}

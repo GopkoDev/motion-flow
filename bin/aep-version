@@ -1,0 +1,22 @@
+#!/usr/bin/env node
+// Prints the next version file name as JSON. Creates nothing.
+//   aep-version <file> [--dir <folder>] [--pattern <regex>] [--naming <naming.md>]
+// --pattern wins over --naming (frontmatter key version_regex); without either the default _v03 style is used.
+import { nextVersionPath, patternFromNamingFile } from '../lib/aep-version.mjs';
+
+const args = process.argv.slice(2);
+const option = (name) => {
+  const index = args.indexOf(name);
+  return index === -1 ? null : args[index + 1] ?? null;
+};
+
+try {
+  const file = args.find((a, i) => !a.startsWith('--') && !['--dir', '--pattern', '--naming'].includes(args[i - 1]));
+  if (!file) throw new Error('Usage: aep-version <file> [--dir <folder>] [--pattern <regex>] [--naming <naming.md>]');
+  const namingFile = option('--naming');
+  const pattern = option('--pattern') ?? (namingFile ? patternFromNamingFile(namingFile) : undefined);
+  process.stdout.write(`${JSON.stringify({ ok: true, ...nextVersionPath(file, { pattern, dir: option('--dir') ?? undefined }) })}\n`);
+} catch (error) {
+  process.stdout.write(`${JSON.stringify({ ok: false, error: error.message })}\n`);
+  process.exitCode = 1;
+}

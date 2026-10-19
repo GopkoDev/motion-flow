@@ -1,0 +1,221 @@
+{
+  "ae": {
+    "version": "24.1.0"
+  },
+  "project": {
+    "path": "/work/spring_v07.aep",
+    "bitsPerChannel": 8
+  },
+  "footage": [
+    {
+      "name": "hero.mov",
+      "path": "/work/media/hero.mov",
+      "missing": false
+    },
+    {
+      "name": "logo.png",
+      "path": "/work/media/logo.png",
+      "missing": false
+    }
+  ],
+  "fonts": [
+    "Montserrat-Bold"
+  ],
+  "comps": [
+    {
+      "id": 1,
+      "name": "Comp 1",
+      "width": 1920,
+      "height": 1080,
+      "fps": 25,
+      "duration": 12,
+      "layers": [
+        {
+          "index": 1,
+          "name": "Shape Layer 1",
+          "type": "shape",
+          "inPoint": 0,
+          "outPoint": 12,
+          "parent": null,
+          "enabled": true,
+          "locked": false,
+          "transform": {
+            "position": [
+              960,
+              540
+            ],
+            "scale": [
+              100,
+              100
+            ],
+            "rotation": 0,
+            "opacity": 100
+          },
+          "effects": [],
+          "expressions": {},
+          "keyframes": {}
+        },
+        {
+          "index": 2,
+          "name": "Solid 2",
+          "type": "solid",
+          "inPoint": 0,
+          "outPoint": 12,
+          "parent": null,
+          "enabled": true,
+          "locked": false,
+          "transform": {
+            "position": [
+              960,
+              540
+            ],
+            "scale": [
+              100,
+              100
+            ],
+            "rotation": 0,
+            "opacity": 100
+          },
+          "effects": [],
+          "expressions": {},
+          "keyframes": {}
+        },
+        {
+          "index": 3,
+          "name": "Null 1",
+          "type": "null",
+          "inPoint": 0,
+          "outPoint": 12,
+          "parent": null,
+          "enabled": true,
+          "locked": false,
+          "transform": {
+            "position": [
+              960,
+              540
+            ],
+            "scale": [
+              100,
+              100
+            ],
+            "rotation": 0,
+            "opacity": 100
+          },
+          "effects": [],
+          "expressions": {},
+          "keyframes": {}
+        },
+        {
+          "index": 4,
+          "name": "Text 1",
+          "type": "text",
+          "inPoint": 0,
+          "outPoint": 12,
+          "parent": null,
+          "enabled": true,
+          "locked": false,
+          "transform": {
+            "position": [
+              960,
+              540
+            ],
+            "scale": [
+              100,
+              100
+            ],
+            "rotation": 0,
+            "opacity": 100
+          },
+          "effects": [],
+          "expressions": {},
+          "keyframes": {}
+        },
+        {
+          "index": 5,
+          "name": "Pre-comp 1",
+          "type": "precomp",
+          "inPoint": 0,
+          "outPoint": 12,
+          "parent": null,
+          "enabled": true,
+          "locked": false,
+          "transform": {
+            "position": [
+              960,
+              540
+            ],
+            "scale": [
+              100,
+              100
+            ],
+            "rotation": 0,
+            "opacity": 100
+          },
+          "effects": [],
+          "expressions": {},
+          "keyframes": {}
+        },
+        {
+          "index": 6,
+          "name": "Headline",
+          "type": "text",
+          "inPoint": 0,
+          "outPoint": 12,
+          "parent": null,
+          "enabled": true,
+          "locked": false,
+          "transform": {
+            "position": [
+              960,
+              540
+            ],
+            "scale": [
+              100,
+              100
+            ],
+            "rotation": 0,
+            "opacity": 100
+          },
+          "effects": [],
+          "expressions": {},
+          "keyframes": {}
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Pre-comp 1",
+      "width": 1920,
+      "height": 1080,
+      "fps": 25,
+      "duration": 4,
+      "layers": [
+        {
+          "index": 1,
+          "name": "Medium Gray-Green Solid 1",
+          "type": "solid",
+          "inPoint": 0,
+          "outPoint": 12,
+          "parent": null,
+          "enabled": true,
+          "locked": false,
+          "transform": {
+            "position": [
+              960,
+              540
+            ],
+            "scale": [
+              100,
+              100
+            ],
+            "rotation": 0,
+            "opacity": 100
+          },
+          "effects": [],
+          "expressions": {},
+          "keyframes": {}
+        }
+      ]
+    }
+  ]
+}

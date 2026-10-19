@@ -1,0 +1,146 @@
+{
+  "ae": {
+    "version": "24.1.0"
+  },
+  "project": {
+    "path": "/work/spring_v07.aep",
+    "bitsPerChannel": 8
+  },
+  "footage": [
+    {
+      "name": "hero.mov",
+      "path": "/work/media/hero.mov",
+      "missing": false
+    },
+    {
+      "name": "logo.png",
+      "path": "/work/media/logo.png",
+      "missing": false
+    }
+  ],
+  "fonts": [
+    "Montserrat-Bold"
+  ],
+  "comps": [
+    {
+      "id": 2,
+      "name": "FINAL_Spring_1920x1080",
+      "width": 1920,
+      "height": 1080,
+      "fps": 25,
+      "duration": 12,
+      "layers": [
+        {
+          "index": 1,
+          "name": "Lockup",
+          "type": "precomp",
+          "inPoint": 0,
+          "outPoint": 12,
+          "parent": null,
+          "enabled": true,
+          "locked": false,
+          "transform": {
+            "position": [
+              960,
+              540
+            ],
+            "scale": [
+              100,
+              100
+            ],
+            "rotation": 0,
+            "opacity": 100
+          },
+          "effects": [],
+          "expressions": {},
+          "keyframes": {}
+        },
+        {
+          "index": 2,
+          "name": "Headline",
+          "type": "text",
+          "inPoint": 0,
+          "outPoint": 12,
+          "parent": null,
+          "enabled": true,
+          "locked": false,
+          "transform": {
+            "position": [
+              960,
+              540
+            ],
+            "scale": [
+              100,
+              100
+            ],
+            "rotation": 0,
+            "opacity": 100
+          },
+          "effects": [],
+          "expressions": {},
+          "keyframes": {}
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "name": "BRAND_Logo_Lockup",
+      "width": 800,
+      "height": 400,
+      "fps": 25,
+      "duration": 6,
+      "layers": [
+        {
+          "index": 1,
+          "name": "Logo_Mark",
+          "type": "shape",
+          "inPoint": 0,
+          "outPoint": 12,
+          "parent": null,
+          "enabled": true,
+          "locked": false,
+          "transform": {
+            "position": [
+              960,
+              540
+            ],
+            "scale": [
+              100,
+              100
+            ],
+            "rotation": 0,
+            "opacity": 100
+          },
+          "effects": [],
+          "expressions": {},
+          "keyframes": {}
+        },
+        {
+          "index": 2,
+          "name": "Logo_Type",
+          "type": "text",
+          "inPoint": 0,
+          "outPoint": 12,
+          "parent": null,
+          "enabled": true,
+          "locked": false,
+          "transform": {
+            "position": [
+              960,
+              540
+            ],
+            "scale": [
+              100,
+              100
+            ],
+            "rotation": 0,
+            "opacity": 100
+          },
+          "effects": [],
+          "expressions": {},
+          "keyframes": {}
+        }
+      ]
+    }
+  ]
+}

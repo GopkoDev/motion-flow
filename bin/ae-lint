@@ -1,0 +1,32 @@
+#!/usr/bin/env node
+// Checks a project dump against the studio checks. Needs no After Effects.
+//   ae-lint --dump <dump.json> --checks <rules/checks> [--baseline <earlier-dump.json>]
+// Prints JSON { ok, violations, skipped, summary }. Exit: 0 no errors, 1 error-level violations, 2 bad input.
+import { readFileSync } from 'node:fs';
+import { lint, loadChecks } from '../lib/ae-lint.mjs';
+
+const args = process.argv.slice(2);
+const option = (name) => {
+  const index = args.indexOf(name);
+  return index === -1 ? null : args[index + 1] ?? null;
+};
+const readJson = (file, label) => {
+  try {
+    return JSON.parse(readFileSync(file, 'utf8'));
+  } catch (e) {
+    throw new Error(`Cannot read ${label} ${file}: ${e.message}`);
+  }
+};
+
+try {
+  const dumpFile = option('--dump');
+  const checksDir = option('--checks');
+  if (!dumpFile || !checksDir) throw new Error('Usage: ae-lint --dump <dump.json> --checks <rules/checks> [--baseline <dump.json>]');
+  const baselineFile = option('--baseline');
+  const result = lint(readJson(dumpFile, 'dump'), loadChecks(checksDir), { baseline: baselineFile ? readJson(baselineFile, 'baseline') : null });
+  process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+  process.exitCode = result.ok ? 0 : 1;
+} catch (error) {
+  process.stdout.write(`${JSON.stringify({ ok: false, error: error.message })}\n`);
+  process.exitCode = 2;
+}

@@ -1,0 +1,274 @@
+{
+  "ae": {
+    "version": "24.1.0"
+  },
+  "project": {
+    "path": "/work/spring_v07.aep",
+    "bitsPerChannel": 8
+  },
+  "footage": [
+    {
+      "name": "hero.mov",
+      "path": "/work/media/hero.mov",
+      "missing": false
+    },
+    {
+      "name": "logo.png",
+      "path": "/work/media/logo.png",
+      "missing": false
+    }
+  ],
+  "fonts": [
+    "Montserrat-Bold"
+  ],
+  "comps": [
+    {
+      "id": 1,
+      "name": "FINAL_Spring_1920x1080",
+      "width": 1920,
+      "height": 1080,
+      "fps": 25,
+      "duration": 12,
+      "layers": [
+        {
+          "index": 1,
+          "name": "CTA_Button",
+          "type": "precomp",
+          "inPoint": 0,
+          "outPoint": 12,
+          "parent": null,
+          "enabled": true,
+          "locked": false,
+          "transform": {
+            "position": [
+              960,
+              540
+            ],
+            "scale": [
+              100,
+              100
+            ],
+            "rotation": 0,
+            "opacity": 100
+          },
+          "effects": [],
+          "expressions": {},
+          "keyframes": {
+            "transform.opacity": [
+              {
+                "t": 0,
+                "v": 0,
+                "ease": "in:BEZIER,out:BEZIER"
+              },
+              {
+                "t": 0.5,
+                "v": 100,
+                "ease": "in:BEZIER,out:BEZIER"
+              }
+            ]
+          }
+        },
+        {
+          "index": 2,
+          "name": "Headline",
+          "type": "text",
+          "inPoint": 0,
+          "outPoint": 12,
+          "parent": null,
+          "enabled": true,
+          "locked": false,
+          "transform": {
+            "position": [
+              960,
+              540
+            ],
+            "scale": [
+              100,
+              100
+            ],
+            "rotation": 0,
+            "opacity": 100
+          },
+          "effects": [
+            "Drop Shadow"
+          ],
+          "expressions": {},
+          "keyframes": {
+            "transform.opacity": [
+              {
+                "t": 0,
+                "v": 0,
+                "ease": "in:BEZIER,out:BEZIER"
+              },
+              {
+                "t": 0.5,
+                "v": 100,
+                "ease": "in:BEZIER,out:BEZIER"
+              }
+            ]
+          }
+        },
+        {
+          "index": 3,
+          "name": "Logo",
+          "type": "footage",
+          "inPoint": 0,
+          "outPoint": 12,
+          "parent": 5,
+          "enabled": true,
+          "locked": false,
+          "transform": {
+            "position": [
+              960,
+              540
+            ],
+            "scale": [
+              100,
+              100
+            ],
+            "rotation": 0,
+            "opacity": 100
+          },
+          "effects": [],
+          "expressions": {},
+          "keyframes": {}
+        },
+        {
+          "index": 4,
+          "name": "Hero_Video",
+          "type": "footage",
+          "inPoint": 0,
+          "outPoint": 12,
+          "parent": null,
+          "enabled": true,
+          "locked": false,
+          "transform": {
+            "position": [
+              960,
+              540
+            ],
+            "scale": [
+              100,
+              100
+            ],
+            "rotation": 0,
+            "opacity": 100
+          },
+          "effects": [],
+          "expressions": {},
+          "keyframes": {}
+        },
+        {
+          "index": 5,
+          "name": "Logo_Anchor",
+          "type": "null",
+          "inPoint": 0,
+          "outPoint": 12,
+          "parent": null,
+          "enabled": true,
+          "locked": false,
+          "transform": {
+            "position": [
+              960,
+              540
+            ],
+            "scale": [
+              100,
+              100
+            ],
+            "rotation": 0,
+            "opacity": 100
+          },
+          "effects": [],
+          "expressions": {},
+          "keyframes": {}
+        },
+        {
+          "index": 6,
+          "name": "BG_Gradient",
+          "type": "solid",
+          "inPoint": 0,
+          "outPoint": 12,
+          "parent": null,
+          "enabled": true,
+          "locked": false,
+          "transform": {
+            "position": [
+              960,
+              540
+            ],
+            "scale": [
+              100,
+              100
+            ],
+            "rotation": 0,
+            "opacity": 100
+          },
+          "effects": [],
+          "expressions": {},
+          "keyframes": {}
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "PRE_CTA_Button",
+      "width": 400,
+      "height": 120,
+      "fps": 25,
+      "duration": 4,
+      "layers": [
+        {
+          "index": 1,
+          "name": "Button_BG",
+          "type": "shape",
+          "inPoint": 0,
+          "outPoint": 12,
+          "parent": null,
+          "enabled": true,
+          "locked": false,
+          "transform": {
+            "position": [
+              960,
+              540
+            ],
+            "scale": [
+              100,
+              100
+            ],
+            "rotation": 0,
+            "opacity": 100
+          },
+          "effects": [],
+          "expressions": {},
+          "keyframes": {}
+        },
+        {
+          "index": 2,
+          "name": "Button_Label",
+          "type": "text",
+          "inPoint": 0,
+          "outPoint": 12,
+          "parent": null,
+          "enabled": true,
+          "locked": false,
+          "transform": {
+            "position": [
+              960,
+              540
+            ],
+            "scale": [
+              100,
+              100
+            ],
+            "rotation": 0,
+            "opacity": 100
+          },
+          "effects": [],
+          "expressions": {},
+          "keyframes": {}
+        }
+      ]
+    }
+  ]
+}

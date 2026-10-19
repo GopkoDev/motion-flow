@@ -1,0 +1,7 @@
+#!/usr/bin/env node
+// Renders one frame of a comp to a PNG inside work/. A thin wrapper over ae-run.
+import { renderFrame } from '../lib/ae-tools.mjs';
+import { releaseActiveLock } from '../lib/ae-run.mjs';
+
+for (const [signal, code] of [['SIGINT', 130], ['SIGTERM', 143]]) process.on(signal, () => { releaseActiveLock(); process.exit(code); });
+process.exitCode = await renderFrame(process.argv.slice(2));

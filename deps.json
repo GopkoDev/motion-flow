@@ -44,7 +44,8 @@
       "check"
     ],
     "optional": false,
-    "notes": "Not checked by version here. The ae-run --ping check is added to doctor in T2.10. Minimum version is open until the designers' AE versions are known (spec section 13, item 4)."
+    "notes": "Doctor looks for an installed After Effects. Run mf-doctor --ping-ae to also start a small script in it (ae-run --ping): it checks that After Effects answers and can write files. The pinged run creates files under work/.ipc of the project. Minimum version is open until the designers' AE versions are known (spec section 13, item 4).",
+    "detect": "after-effects"
   },
   {
     "name": "whisper",

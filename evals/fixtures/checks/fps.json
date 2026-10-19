@@ -1,0 +1,1 @@
+{ "id": "fps-25", "type": "comp_fps", "equals": 25, "comps": "^FINAL_", "message": "Final comps must run at 25 fps" }

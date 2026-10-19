@@ -7,12 +7,14 @@ const option = (name) => {
   return index === -1 ? null : args[index + 1] ?? null;
 };
 const json = args.includes('--json');
+const pingAe = args.includes('--ping-ae');
 
 try {
   const projectDir = option('--project') ?? process.cwd();
   const flow = option('--flow');
   const report = await runDoctor({
     flow,
+    pingAe,
     projectDir,
     flowDirs: [option('--flows-dir'), `${projectDir}/.claude/skills`].filter(Boolean),
   });

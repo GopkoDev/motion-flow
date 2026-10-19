@@ -1,0 +1,5 @@
+[
+  { "id": "no-missing-media", "type": "footage_missing" },
+  { "id": "brand-fonts", "type": "fonts_allowed", "allowed": ["Montserrat-Bold", "Montserrat-Regular"], "severity": "warning" },
+  { "id": "bits-8", "type": "project_bits", "equals": 8 }
+]
