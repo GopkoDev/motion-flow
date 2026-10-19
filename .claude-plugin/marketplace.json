@@ -1,0 +1,15 @@
+{
+  "name": "motion",
+  "description": "Plugins for the motion team.",
+  "owner": {
+    "name": "Dmytro Hopko",
+    "email": "gopkodimon@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "motion-flow",
+      "source": "./",
+      "description": "Universal intake → plan → build → check → deliver pipeline for After Effects."
+    }
+  ]
+}
