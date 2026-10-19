@@ -1,6 +1,6 @@
 ---
 name: intake
-description: Start a motion task in After Effects. Use when the designer describes a job to do (a new animation, an edit, a resize, an export, "зроби...", "змінити...", "підготуй під 9:16") or says "start a task". Asks only what is missing, picks a studio flow when one fits, and writes .motion/task.md. Does not change any project or fetch any file.
+description: Start a motion task in After Effects. Use when the designer describes a job to do (a new animation, an edit, a resize, an export, "make...", "change...", "prepare it for 9:16") or says "start a task". Asks only what is missing, picks a studio flow when one fits, and writes .motion/task.md. Does not change any project or fetch any file.
 model: inherit
 ---
 
@@ -27,11 +27,11 @@ Before starting, read: `${CLAUDE_PLUGIN_ROOT}/skills/_shared/safety.md`, `socrat
 9. **Write `.motion/task.md`** from `${CLAUDE_PLUGIN_ROOT}/templates/task.md`:
    - `id`: `<today's date>-<type>-<NN>`. `NN` is `01`, or the next free number if `.motion/archive/` already holds the same prefix.
    - `type`, `flow`, `inputs`, `deadline` from the answers.
-   - `## Опис`: the request in the designer's words. `## Критерії готовності`: the agreed list. `## Що відомо / припущення`: facts learned, then every assumption, one per line. `## Відкриті питання`: what is still unknown (or `- немає`).
+   - `## Description`: the request in the designer's words. `## Acceptance criteria`: the agreed list. `## Known facts and assumptions`: facts learned, then every assumption, one per line. `## Open questions`: what is still unknown (or `- none`).
    - `status: ready` only when the type is known, every input exists, and there is at least one criterion. Otherwise write `status: draft`, say what is missing, and stop without a handoff to `plan`.
 10. **Independent pass for ambiguities** (`independent-review.md`, "Prompt for intake"). Run it on the written task. Resolve every finding with the designer: tighten the task, defer it (an open question with who and when), or drop it as not an ambiguity. Update `task.md` after each answer; none may stay unanswered.
 11. **Self-check.** Run `mf-gate verify task`. If an item fails, fix the file and run it again (at most twice). If something still fails, tell the designer what and why; do not set `status: ready` while it fails.
-12. **Confirm once.** Show a short summary (the task, the inputs, the criteria, the assumptions, the open questions) and ask "Це правильно?". Apply any change to the file and run `mf-gate verify task` again.
+12. **Confirm once.** Show a short summary (the task, the inputs, the criteria, the assumptions, the open questions) and ask "Is this right?" (in Ukrainian). Apply any change to the file and run `mf-gate verify task` again.
 13. **Hand off** with the block from `handoff.md`: what was written (`.motion/task.md`), the self-check line, what to check (the criteria and the assumptions list), next command `/motion-flow:plan`.
 
 ## Never

@@ -136,7 +136,7 @@ Note: `docs.claude.com/en/docs/claude-code/...` URLs from the spec now 301-redir
 - Spec 4.4: SDD `_shared` file names — closed in T3.1 when we read `_temp/repos/genkovich__sdd/skills/_shared/` (not part of T0.2).
 - Spec 4.18 `doctor` / spec 7 AE launch: not schema items; stay open until T2.9.
 
-## Status of `[перевірити]` items
+## Status of `[verify]` items
 
 | Spec place | Item | Status |
 |---|---|---|

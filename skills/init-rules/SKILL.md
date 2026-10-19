@@ -1,6 +1,6 @@
 ---
 name: init-rules
-description: Create the first draft of a studio's rules once, from reference projects and an interview with the designers. Use when a studio sets up motion-flow, or says "init rules", "створи правила студії", "заповни правила". Reads the Drive folder structure and reference After Effects projects, interviews the designer, and writes draft rule files with open questions. Never confirms a rule.
+description: Create the first draft of a studio's rules once, from reference projects and an interview with the designers. Use when a studio sets up motion-flow, or says "init rules", "create the studio rules", "fill in the rules". Reads the Drive folder structure and reference After Effects projects, interviews the designer, and writes draft rule files with open questions. Never confirms a rule.
 model: inherit
 ---
 
@@ -32,7 +32,7 @@ Before starting, read `${CLAUDE_PLUGIN_ROOT}/skills/_shared/safety.md`, `socrati
    Do not ask what the dumps already answer; ask whether it is correct.
 6. **Write the drafts.** Fill `rules/naming.md`, `motion-system.md`, `protected.md`, `delivery.md`, `drive.md` and `rules/project-template/README.md` from the scaffold's sections, in the designers' own words.
    - Every file keeps `status: draft` with `confirmed_by` and `confirmed_at` empty. Never write `status: confirmed`.
-   - Mark each statement that comes from observation and is not confirmed by the designer with `TODO: підтвердити`.
+   - Mark each statement that comes from observation and is not confirmed by the designer with `TODO: confirm`.
    - Set `version_regex` in `naming.md` only if the version pattern is clear; otherwise leave the default and mark it.
    - Put no machine paths, client names or real project contents in the files; aliases and placeholders only.
    - Add a check to `rules/checks/` only when the designer explicitly confirmed that rule (copy from `rules/checks/_examples/` and adjust). A wrong check blocks good work, so when in doubt leave it out and list it as an open question.

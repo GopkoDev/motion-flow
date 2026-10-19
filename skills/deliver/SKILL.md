@@ -1,6 +1,6 @@
 ---
 name: deliver
-description: Prepare the final files of an approved task for handover. Use after the designer approved the check, or when the designer says "здай", "deliver", "підготуй фінал". Names files by the studio rules, gathers them in work/out/ with checksums, writes .motion/deliver.md and tells the designer what to copy to Drive and where. Never writes to Drive.
+description: Prepare the final files of an approved task for handover. Use after the designer approved the check, or when the designer says "deliver", "hand it over", "prepare the final". Names files by the studio rules, gathers them in work/out/ with checksums, writes .motion/deliver.md and tells the designer what to copy to Drive and where. Never writes to Drive.
 model: inherit
 ---
 
@@ -13,7 +13,7 @@ Before starting, read `${CLAUDE_PLUGIN_ROOT}/skills/_shared/gating.md`, `safety.
 ## Steps
 
 1. **Gate.** Run `mf-gate require deliver`. It refuses without an approved `check.md` or if the plan changed after approval. Give the refusal text from `gating.md` and stop.
-2. **Read** `.motion/task.md`, `.motion/plan.md`, `.motion/check.md`, `.motion/overrides.md` and, from the studio rules, `delivery` and `naming` (and `drive`, for where files go). Draft rules: A studio rule file whose frontmatter says `status: draft` has not been confirmed by a person. When you read one, tell the designer once per step, in Ukrainian, which file and that it is only a draft ("Правило <назва> ще чернетка"), then follow it carefully and ask when it matters. Never treat a draft as settled and never change its status. If a delivery rule is missing, ask the designer instead of guessing a format.
+2. **Read** `.motion/task.md`, `.motion/plan.md`, `.motion/check.md`, `.motion/overrides.md` and, from the studio rules, `delivery` and `naming` (and `drive`, for where files go). Draft rules: A studio rule file whose frontmatter says `status: draft` has not been confirmed by a person. When you read one, tell the designer once per step (in Ukrainian) which rule file it is and that it is only a draft, then follow it carefully and ask when it matters. Never treat a draft as settled and never change its status. If a delivery rule is missing, ask the designer instead of guessing a format.
 3. **Decide what is delivered**, with `AskUserQuestion`, only about what the task and the rules do not already settle:
    - the project file (the result copy `project_copy`): usually yes;
    - still frames (the check frames or new ones): yes or no;
@@ -24,7 +24,7 @@ Before starting, read `${CLAUDE_PLUGIN_ROOT}/skills/_shared/gating.md`, `safety.
    - If the command `ae-export` exists, use it with the settings from `delivery` (format, codec, size, audio) and write into `work/out/`.
    - Otherwise tell the designer, in Ukrainian, to export from After Effects themselves into `work/out/`: give the exact settings from the delivery rules, the file name to use, and the comp. Wait for them to say it is done. Then check the file: it exists, is not empty, and (if `ffprobe` is installed) its size, duration, codec and audio match the rules. Report any difference; do not change the file.
 7. **Checksums.** `mf-sum work/out/<file> ...` gives size and sha256 of every delivered file.
-8. **Write `.motion/deliver.md`** from `${CLAUDE_PLUGIN_ROOT}/templates/deliver.md`: `task_id`, `status: delivered`, `delivered_at` (now, ISO 8601), the file table (name, size, sha256), and `## Куди покласти`: for each file, the Drive folder from the delivery or drive rules (an alias and a relative path, never a machine path). Add open items.
+8. **Write `.motion/deliver.md`** from `${CLAUDE_PLUGIN_ROOT}/templates/deliver.md`: `task_id`, `status: delivered`, `delivered_at` (now, ISO 8601), the file table (name, size, sha256), and `## Where to put them`: for each file, the Drive folder from the delivery or drive rules (an alias and a relative path, never a machine path). Add open items.
 9. **Changelog.** Append one line to `.motion/changelog.md` (create it if it does not exist): date, task id, what was delivered.
 10. **Local commit, only if enabled.** If `.motion/state.json` has `"commit_artifacts": true` and the project is a git repository, commit the text artifacts of this task (`.motion/task.md`, `plan.md`, `check.md`, `deliver.md`, `changelog.md`) with a message naming the task id. Never add `work/`, `.aep` files, media or renders. Never push.
 11. **Hand off** (`handoff.md`): the files in `work/out/`, the Drive folders to copy them to (by the designer, by hand), `.motion/deliver.md`. Next command: `/motion-flow:intake` for the next task (it archives this one first).

@@ -3,16 +3,16 @@ task_id: YYYY-MM-DD-<type>-01
 status: delivered
 delivered_at: null
 ---
-## Файли
+## Files
 
-| Файл (у work/out/) | Розмір | sha256 |
+| File (in work/out/) | Size | sha256 |
 |---|---|---|
 | <name> | <bytes> | <hash> |
 
-## Куди покласти
+## Where to put them
 
 - <file>: <folder on Drive according to the studio delivery rules>. The designer copies it; the agent never writes to Drive.
 
-## Відкриті питання
+## Open questions
 
 - <Anything left for the designer.>

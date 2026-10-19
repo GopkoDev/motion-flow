@@ -1,13 +1,13 @@
 ---
 project: <project name>
 ---
-## Винятки з правил студії
+## Exceptions to the studio rules
 
 <!-- One entry per exception. A step may use an override only if it is listed here. -->
 
 ### <short title>
 
-- Правило: <which studio rule, for example rules/naming.md>
-- Дозволено замість нього: <what is allowed instead>
-- Причина: <why>
-- Дозволив: <name of the person>, <date>
+- Rule: <which studio rule, for example rules/naming.md>
+- Allowed instead: <what is allowed instead>
+- Reason: <why>
+- Allowed by: <name of the person>, <date>

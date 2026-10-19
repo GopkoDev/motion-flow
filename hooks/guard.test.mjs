@@ -247,7 +247,7 @@ test('the file tools cannot write an approval into plan.md or check.md, but can 
     assert.equal(tool('Write', { file_path: plan, content: `task_id: x\n${text}\n` }).decision, 'deny', text);
     assert.equal(tool('Edit', { file_path: check, old_string: 'approved: false', new_string: text }).decision, 'deny', text);
   }
-  assert.equal(tool('Write', { file_path: plan, content: '---\ntask_id: x\nstatus: draft\napproved_at: null\nplan_sha256: null\n---\n## Кроки\n' }).decision, 'allow');
+  assert.equal(tool('Write', { file_path: plan, content: '---\ntask_id: x\nstatus: draft\napproved_at: null\nplan_sha256: null\n---\n## Steps\n' }).decision, 'allow');
   assert.equal(tool('Write', { file_path: check, content: '---\nverdict: PASS\napproved: false\n---\n' }).decision, 'allow');
   assert.equal(tool('Write', { file_path: join(project, '.motion', 'task.md'), content: 'status: approved\n' }).decision, 'allow', 'only plan.md and check.md hold approvals');
   assert.equal(tool('Write', { file_path: join(project, 'notes.md'), content: 'approved: true\n' }).decision, 'allow');

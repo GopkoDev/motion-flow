@@ -24,15 +24,15 @@ Frontmatter is flat `key: value` lines between two `---` lines. Lists use `[a, b
 ## task.md
 
 Frontmatter: `id` (date + type + counter, for example `2026-10-19-resize-01`), `type` (`resize|new|edit|export|other`), `flow` (flow name or `null`), `status` (`draft|ready`), `inputs` (list of `alias` + `path`, or just `path` under `work/` in no-Drive projects), `deadline` (or `null`).
-Body sections: `## Опис`, `## Критерії готовності`, `## Що відомо / припущення`, `## Відкриті питання`.
+Body sections: `## Description`, `## Acceptance criteria`, `## Known facts and assumptions`, `## Open questions`.
 
-**`## Критерії готовності` is the contract of the whole task.** One line per criterion, `- AC1: <a result a person can see or measure>`, with numbers where possible ("the logo is 120 px wide in the top right", not "the logo looks good"). Ids are `AC1`, `AC2`, ... and never change once the plan is approved. The plan must cover every criterion with a step, and `check` must prove every criterion with evidence, so nothing the designer asked for can be forgotten and nothing nobody asked for gets built. The assumptions list comes from the Socratic loop. `status: ready` means the plan can start (the gate also runs `mf-gate verify task`).
+**`## Acceptance criteria` is the contract of the whole task.** One line per criterion, `- AC1: <a result a person can see or measure>`, with numbers where possible ("the logo is 120 px wide in the top right", not "the logo looks good"). Ids are `AC1`, `AC2`, ... and never change once the plan is approved. The plan must cover every criterion with a step, and `check` must prove every criterion with evidence, so nothing the designer asked for can be forgotten and nothing nobody asked for gets built. The assumptions list comes from the Socratic loop. `status: ready` means the plan can start (the gate also runs `mf-gate verify task`).
 
 ## plan.md
 
 Frontmatter: `task_id`, `status` (`draft|approved`), `approved_at`, `plan_sha256` (see `gating.md`), `project_copy` (the new copy in `work/`), `touches_protected` (`true|false`), `needs` (tools from `deps.json`, for example `[ffmpeg]`).
-Body: `## Кроки` (a table: `#`, target comp/layer/property, change, expected result, frame to check, `Критерії`), `## Не охоплено планом`, `## Ризики`, `## Питання до людини`.
-`Критерії` lists the `AC` ids a step serves. Every step must serve at least one criterion (a step with none is a step nobody asked for), and every criterion of the task must be served by a step or be listed under `## Не охоплено планом` with the reason (write `- немає` when everything is covered). The designer sees the uncovered list when approving.
+Body: `## Steps` (a table: `#`, target comp/layer/property, change, expected result, frame to check, `Criteria`), `## Not covered by the plan`, `## Risks`, `## Questions for the designer`.
+`Criteria` lists the `AC` ids a step serves. Every step must serve at least one criterion (a step with none is a step nobody asked for), and every criterion of the task must be served by a step or be listed under `## Not covered by the plan` with the reason (write `- none` when everything is covered). The designer sees the uncovered list when approving.
 `status` and `approved_at` are written only by `mf-gate approve plan`.
 
 ## build.log.jsonl
@@ -49,13 +49,13 @@ One JSON object per line, one line per script run, appended in order. **`ae-run 
 ## check.md
 
 Frontmatter: `task_id`, `verdict` (`PASS|ISSUES`), `approved`, `approved_at`.
-Body: `## Звірка з планом` (table: `#`, expected, actual, verdict; one row per plan step), `## Критерії готовності` (table: `AC`, `Доказ` = what the dump or frame shows with its file, `Вердикт` = `PASS|FAIL|NOT_VERIFIED`; one row per criterion of the task), `## Lint` (the `ae-lint` result, summarised), `## Кадри` (list of `work/frames/...` files that exist), `## Незалежна перевірка` (what the independent pass found, or `не виконувалась: <причина>`), `## Відкриті питання`. `verdict: PASS` only when every plan row and every criterion is `PASS`.
+Body: `## Comparison with the plan` (table: `#`, expected, actual, verdict; one row per plan step), `## Acceptance criteria` (table: `AC`, `Evidence` = what the dump or frame shows with its file, `Verdict` = `PASS|FAIL|NOT_VERIFIED`; one row per criterion of the task), `## Lint` (the `ae-lint` result, summarised), `## Frames` (list of `work/frames/...` files that exist), `## Independent review` (what the independent pass found, or `not run: <reason>`), `## Open questions`. `verdict: PASS` only when every plan row and every criterion is `PASS`.
 `approved` and `approved_at` are written only by `mf-gate approve check`, after the designer looked at the frames.
 
 ## deliver.md
 
 Frontmatter: `task_id`, `status` (`delivered`), `delivered_at`.
-Body: `## Файли` (table: file in `work/out/`, size, sha256), `## Куди покласти` (where the designer should put each file on Drive, from the studio's delivery rules; the agent never copies there), `## Відкриті питання`.
+Body: `## Files` (table: file in `work/out/`, size, sha256), `## Where to put them` (where the designer should put each file on Drive, from the studio's delivery rules; the agent never copies there), `## Open questions`.
 
 ## overrides.md
 

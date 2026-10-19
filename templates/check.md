@@ -4,15 +4,15 @@ verdict: PASS
 approved: false
 approved_at: null
 ---
-## Звірка з планом
+## Comparison with the plan
 
-| # | Очікувалось | Факт | Вердикт |
+| # | Expected | Actual | Verdict |
 |---|---|---|---|
 | 1 | <from plan.md> | <what the dump or frame shows> | PASS |
 
-## Критерії готовності
+## Acceptance criteria
 
-| AC | Доказ | Вердикт |
+| AC | Evidence | Verdict |
 |---|---|---|
 | AC1 | <what the dump or frame shows, with its file> | PASS |
 
@@ -20,14 +20,14 @@ approved_at: null
 
 <Summary of the ae-lint result: errors, warnings, skipped checks.>
 
-## Кадри
+## Frames
 
 - work/frames/step01_t2.5s.png
 
-## Незалежна перевірка
+## Independent review
 
-<what the independent pass found, or "не виконувалась: <reason>">
+<what the independent pass found, or "not run: <reason>">
 
-## Відкриті питання
+## Open questions
 
 - <Anything the designer should look at before approving.>

@@ -7,22 +7,22 @@ project_copy: work/project_v02.aep
 touches_protected: false
 needs: []
 ---
-## Кроки
+## Steps
 
-| # | Ціль (комп/шар/властивість) | Зміна | Очікуваний результат | Кадр для перевірки | Критерії |
+| # | Target (comp/layer/property) | Change | Expected result | Frame to check | Criteria |
 |---|---|---|---|---|---|
 | 1 | <comp / layer / property> | <what changes> | <what should be true afterwards> | <comp, time in seconds> | AC1 |
 
-## Не охоплено планом
+## Not covered by the plan
 
-<!-- Criteria of task.md that no step covers, with the reason. Write "- немає" when every criterion has a step. -->
+<!-- Criteria of task.md that no step covers, with the reason. Write "- none" when every criterion has a step. -->
 
-- немає
+- none
 
-## Ризики
+## Risks
 
 - <What could go wrong, and what protects against it.>
 
-## Питання до людини
+## Questions for the designer
 
 - <Open questions the designer must answer before approving.>

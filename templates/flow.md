@@ -5,37 +5,37 @@ owner: <designer name>
 status: draft
 needs: []
 ---
-## Для чого цей флоу
+## What this flow is for
 
 <One or two sentences.>
 
-## Що його запускає (3 приклади фраз)
+## What starts it (3 example phrases)
 
 - "<phrase 1>"
 - "<phrase 2>"
 - "<phrase 3>"
 
-## Входи
+## Inputs
 
 - <What the flow needs: files (alias + path), formats, numbers.>
 
-## Кроки по порядку
+## Steps in order
 
 1. <Step 1>
 2. <Step 2>
 
-## Де рішення людини
+## Where the designer decides
 
 - <Where the designer must decide. The two gates (after plan, after check) always apply.>
 
-## Що не можна чіпати
+## What must not be touched
 
 - <Protected comps, layers, brand elements.>
 
-## Як зрозуміти, що готово
+## How to tell it is done
 
 - <Observable result: a frame, a file, a lint-clean dump.>
 
-## Приклади (посилання на example/)
+## Examples (links to example/)
 
 - example/<name>

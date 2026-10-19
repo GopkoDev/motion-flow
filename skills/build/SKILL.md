@@ -1,6 +1,6 @@
 ---
 name: build
-description: Carry out an approved plan in After Effects on a copy of the project. Use after the designer approved the plan, or when the designer says "виконуй план", "build". Writes one script per plan step, runs each through ae-run, stops at the first error, and logs every run. Never works on originals.
+description: Carry out an approved plan in After Effects on a copy of the project. Use after the designer approved the plan, or when the designer says "run the plan", "build". Writes one script per plan step, runs each through ae-run, stops at the first error, and logs every run. Never works on originals.
 model: inherit
 ---
 
@@ -13,7 +13,7 @@ Before starting, read `${CLAUDE_PLUGIN_ROOT}/skills/_shared/gating.md`, `safety.
 ## Steps
 
 1. **Gate.** Run `mf-gate require build`. If it refuses (plan missing, not approved, or changed after approval), give the refusal text from `gating.md` and stop. Do not "repair" the plan or its hash.
-2. **Read the rules the steps need** (`naming`, `motion-system`, `protected` from the studio rules, and `.motion/overrides.md`). **Draft rules.** A studio rule file whose frontmatter says `status: draft` has not been confirmed by a person. When you read one, tell the designer once per step, in Ukrainian, which file and that it is only a draft ("Правило <назва> ще чернетка"), then follow it carefully and ask when it matters. Never treat a draft as settled and never change its status.
+2. **Read the rules the steps need** (`naming`, `motion-system`, `protected` from the studio rules, and `.motion/overrides.md`). **Draft rules.** A studio rule file whose frontmatter says `status: draft` has not been confirmed by a person. When you read one, tell the designer once per step (in Ukrainian) which rule file it is and that it is only a draft, then follow it carefully and ask when it matters. Never treat a draft as settled and never change its status.
 3. **Read `.motion/plan.md`** and `.motion/task.md`. Find the source project in `work/` (the input of the task; Drive files were fetched by `plan`) and `project_copy:` from the plan.
 4. **Make the working copy.** `cp <source .aep> <project_copy>` inside `work/`. If `project_copy` already exists, never overwrite it: run `aep-version` on the source again to get a free name, tell the designer, and use it. Every script runs on this copy, never on the source.
 5. **Run the steps in order.** For plan step N, with title T:

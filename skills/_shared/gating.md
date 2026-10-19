@@ -45,13 +45,13 @@ mf-gate archive [--abandon]   # move the finished (or dropped) task's artifacts 
 
 ## Refusal text
 
-When the gate says `ok: false`, tell the designer in Ukrainian, short, in this shape, and stop. Do not try to do the missing step yourself and do not write any file.
+When the gate says `ok: false`, tell the designer (in Ukrainian), short, in this shape, and stop. Do not try to do the missing step yourself and do not write any file.
 
 ```
-Не можу почати <крок>: <що саме бракує, одним реченням>.
-Спершу запусти:
+Cannot start <step>: <what exactly is missing, in one sentence>.
+Run this first:
 
-/motion-flow:<крок, що створює файл>
+/motion-flow:<the step that creates the missing file>
 ```
 
 ## The plan hash

@@ -6,7 +6,7 @@ model: inherit
 
 # Studio rules: <studio name>
 
-The index of this studio's rules. Read only the files a step needs (table below). Every rule file starts with `status: draft` or `status: confirmed`. If a file you read is `draft`, tell the designer once, in Ukrainian: "Правило <назва> ще чернетка, його не підтверджено" and follow it with extra care (ask when it matters). Never turn a draft into `confirmed` yourself; a person reads it and commits it.
+The index of this studio's rules. Read only the files a step needs (table below). Every rule file starts with `status: draft` or `status: confirmed`. If a file you read is `draft`, tell the designer once (in Ukrainian) which rule file it is and that it is only a draft, not confirmed, and follow it with extra care (ask when it matters). Never turn a draft into `confirmed` yourself; a person reads it and commits it.
 
 Rule files are in `${CLAUDE_PLUGIN_ROOT}/rules/`.
 

@@ -1,6 +1,6 @@
 ---
 name: <flow-name>
-description: <When to run this flow, with 2-3 example phrases a designer would say, for example "зроби ресайз під вертикаль", "adapt to 9:16". Put the key use case first.>
+description: <When to run this flow, with 2-3 example phrases a designer would say, for example "resize it for vertical", "adapt to 9:16". Put the key use case first.>
 model: inherit
 ---
 

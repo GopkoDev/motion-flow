@@ -61,12 +61,12 @@ import { readdirSync } from 'node:fs';
 import { parseFrontmatter } from './validate_plugin.mjs';
 
 const TEMPLATES = {
-  'task.md': { keys: ['id', 'type', 'flow', 'status', 'inputs', 'deadline'], headings: ['## Опис', '## Критерії готовності', '## Що відомо / припущення', '## Відкриті питання'] },
-  'plan.md': { keys: ['task_id', 'status', 'approved_at', 'plan_sha256', 'project_copy', 'touches_protected', 'needs'], headings: ['## Кроки', '## Не охоплено планом', '## Ризики', '## Питання до людини'] },
-  'check.md': { keys: ['task_id', 'verdict', 'approved', 'approved_at'], headings: ['## Звірка з планом', '## Критерії готовності', '## Lint', '## Кадри', '## Незалежна перевірка', '## Відкриті питання'] },
-  'deliver.md': { keys: ['task_id', 'status', 'delivered_at'], headings: ['## Файли', '## Куди покласти', '## Відкриті питання'] },
-  'overrides.md': { keys: ['project'], headings: ['## Винятки з правил студії'] },
-  'flow.md': { keys: ['name', 'version', 'owner', 'status', 'needs'], headings: ['## Для чого цей флоу', '## Що його запускає (3 приклади фраз)', '## Входи', '## Кроки по порядку', '## Де рішення людини', '## Що не можна чіпати', '## Як зрозуміти, що готово', '## Приклади (посилання на example/)'] },
+  'task.md': { keys: ['id', 'type', 'flow', 'status', 'inputs', 'deadline'], headings: ['## Description', '## Acceptance criteria', '## Known facts and assumptions', '## Open questions'] },
+  'plan.md': { keys: ['task_id', 'status', 'approved_at', 'plan_sha256', 'project_copy', 'touches_protected', 'needs'], headings: ['## Steps', '## Not covered by the plan', '## Risks', '## Questions for the designer'] },
+  'check.md': { keys: ['task_id', 'verdict', 'approved', 'approved_at'], headings: ['## Comparison with the plan', '## Acceptance criteria', '## Lint', '## Frames', '## Independent review', '## Open questions'] },
+  'deliver.md': { keys: ['task_id', 'status', 'delivered_at'], headings: ['## Files', '## Where to put them', '## Open questions'] },
+  'overrides.md': { keys: ['project'], headings: ['## Exceptions to the studio rules'] },
+  'flow.md': { keys: ['name', 'version', 'owner', 'status', 'needs'], headings: ['## What this flow is for', '## What starts it (3 example phrases)', '## Inputs', '## Steps in order', '## Where the designer decides', '## What must not be touched', '## How to tell it is done', '## Examples (links to example/)'] },
   'flow-SKILL.md': { keys: ['name', 'description', 'model'], headings: ['## Safety'] },
 };
 
@@ -226,8 +226,8 @@ test('after the init-rules renames, the scaffold passes claude plugin validate (
 
 test('the task, plan and check templates carry the criteria columns and rows the gate traces', () => {
   assert.match(read('task.md'), /- AC1: /);
-  assert.match(read('plan.md'), /\| Кадр для перевірки \| Критерії \|/);
-  assert.match(read('check.md'), /\| AC \| Доказ \| Вердикт \|/);
+  assert.match(read('plan.md'), /\| Frame to check \| Criteria \|/);
+  assert.match(read('check.md'), /\| AC \| Evidence \| Verdict \|/);
 });
 
 test('intake, plan and check tell the agent to self-check and, for intake and check, to use an independent pass', () => {
