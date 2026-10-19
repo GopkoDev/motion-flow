@@ -258,6 +258,15 @@ test('shell writes to plan.md or check.md ask; reads do not', () => {
   expectAll(['cat .motion/plan.md', 'grep approved .motion/check.md', 'mf-gate hash plan'], 'allow');
 });
 
+// ---------- studio rules plugin in the project settings ----------
+
+test('mf-init --rules asks only when it would edit an existing settings.json', () => {
+  expectAll(['mf-init --rules acme-rules@acme-rules', 'mf-init --no-rules', 'mf-init --dry-run --rules acme-rules@acme-rules'], 'allow');
+  writeFileSync(join(project, '.claude', 'settings.json'), '{}');
+  expectAll(['mf-init --rules acme-rules@acme-rules', 'node bin/mf-init --rules a@b', 'sudo mf-init --rules a@b'], 'ask');
+  expectAll(['mf-init --no-rules', 'mf-init', 'mf-init --dry-run --rules a@b'], 'allow');
+});
+
 // ---------- the build log is written only by ae-run ----------
 
 test('the build log cannot be written by hand: file tools are denied, shell writes are denied, reads are fine', () => {

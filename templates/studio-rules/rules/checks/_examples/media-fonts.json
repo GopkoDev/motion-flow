@@ -1,0 +1,4 @@
+[
+  { "id": "no-missing-media", "type": "footage_missing" },
+  { "id": "brand-fonts", "type": "fonts_allowed", "allowed": ["<Font-Regular>", "<Font-Bold>"], "severity": "warning" }
+]

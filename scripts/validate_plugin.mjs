@@ -14,6 +14,8 @@ const MAX_SKILL_LINES = 500;
 // Steps that consume an earlier artifact must start with the gate for their own step, and follow the safety rules.
 const GATED_STEPS = ['plan', 'build', 'check', 'deliver'];
 const STEP_SKILLS = ['intake', 'plan', 'build', 'check', 'deliver'];
+// Steps that read studio rules must warn when a rule is still a draft.
+const DRAFT_AWARE_STEPS = ['plan', 'build', 'check', 'deliver'];
 
 // Drive is read-only for the agent: no skill may tell it to write, delete, move, rename or share on Drive.
 const DRIVE_WRITE_PATTERNS = [
@@ -167,6 +169,7 @@ function checkStepSkills(root, errors) {
       errors.push(`${rel}: a step that consumes an artifact must call "mf-gate require ${name}"`);
     }
     if (!/_shared\/safety\.md|safety\.md/.test(text)) errors.push(`${rel}: must point to the shared safety rules (safety.md)`);
+    if (DRAFT_AWARE_STEPS.includes(name) && !/status: draft/.test(text)) errors.push(`${rel}: must say what to do with a studio rule that has "status: draft" (warn the designer)`);
   }
 }
 

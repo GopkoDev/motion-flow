@@ -13,7 +13,7 @@ Before starting, read `${CLAUDE_PLUGIN_ROOT}/skills/_shared/gating.md`, `safety.
 ## Steps
 
 1. **Gate.** Run `mf-gate require check`. It refuses without a clean `build.log.jsonl` (missing, broken, or a failed step) or if the plan changed after approval. Give the refusal text from `gating.md` and stop.
-2. **Read** `.motion/plan.md`, `.motion/task.md`, and `project_copy:` from the plan (the result of `build`).
+2. **Read** `.motion/plan.md`, `.motion/task.md`, and `project_copy:` from the plan (the result of `build`), and the studio rules `naming`, `protected` and `checks/`. **Draft rules.** A studio rule file whose frontmatter says `status: draft` has not been confirmed by a person. When you read one, tell the designer once per step, in Ukrainian, which file and that it is only a draft ("Правило <назва> ще чернетка"), then follow it carefully and ask when it matters. Never treat a draft as settled and never change its status.
 3. **Fresh dump.** `ae-dump --project <project_copy> --out work/dumps/after.json`.
 4. **Lint.** If the studio rules have a `checks/` folder (the `studio-rules` skill tells where), run `ae-lint --dump work/dumps/after.json --checks <that folder> --baseline <the snapshot in .motion/snapshots/>`. The baseline is what lets lint notice changes to protected comps. If there is no checks folder, write "lint skipped: no studio checks" in `check.md`; never write a clean lint you did not run.
 5. **Compare with the plan.** For every row of the plan, find the evidence in the fresh dump (a layer count, a duration, fps, a transform value, a keyframe) and write what is actually there. A row passes only when the dump shows what the row expected.

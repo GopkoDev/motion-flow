@@ -1,7 +1,9 @@
 // The project templates must stay valid and consistent with docs/schemas-notes.md.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -93,7 +95,7 @@ test('the flow skill template promises not to weaken safety.md and uses model: i
 
 test('templates live next to the config templates and nothing else unexpected is in the folder', () => {
   const files = readdirSync(fileURLToPath(new URL('../templates/', import.meta.url))).sort();
-  assert.deepEqual(files, ['CLAUDE.project.md', 'check.md', 'deliver.md', 'flow-SKILL.md', 'flow.md', 'gitignore.project', 'overrides.md', 'plan.md', 'roots.example.json', 'settings.project.json', 'task.md']);
+  assert.deepEqual(files, ['CLAUDE.project.md', 'check.md', 'deliver.md', 'flow-SKILL.md', 'flow.md', 'gitignore.project', 'overrides.md', 'plan.md', 'roots.example.json', 'settings.project.json', 'studio-rules', 'task.md']);
 });
 
 // ---------- shared reference docs ----------
@@ -118,4 +120,106 @@ test('gating.md describes the five gates, the hash rule and human-only approval'
   const text = readFileSync(fileURLToPath(new URL('../skills/_shared/gating.md', import.meta.url)), 'utf8');
   for (const phrase of ['mf-gate require', 'plan_sha256', 'AskUserQuestion', 'plan_changed_after_approval', 'twice']) assert.ok(text.includes(phrase), phrase);
   for (const step of ['intake', 'plan', 'build', 'check', 'deliver']) assert.ok(text.includes(`| ${step} |`), step);
+});
+
+// ---------- the studio-rules scaffold (T4.1) ----------
+
+import { existsSync } from 'node:fs';
+import { loadChecks } from '../lib/ae-lint.mjs';
+import { compilePattern, nextVersionName, patternFromNamingFile } from '../lib/aep-version.mjs';
+
+const SCAFFOLD = fileURLToPath(new URL('../templates/studio-rules/', import.meta.url));
+const scaffold = (name) => readFileSync(join(SCAFFOLD, name), 'utf8');
+const RULE_FILES = ['naming.md', 'motion-system.md', 'protected.md', 'delivery.md', 'drive.md'];
+
+test('the scaffold has a valid plugin manifest and an index skill with the required frontmatter', () => {
+  const manifest = JSON.parse(scaffold('.claude-plugin/plugin.json'));
+  assert.equal(manifest.name, 'studio-rules');
+  const front = parseFrontmatter(scaffold('skills/studio-rules/SKILL.md'));
+  for (const key of ['name', 'description', 'model']) assert.ok(front[key], key);
+  assert.equal(front.name, 'studio-rules');
+});
+
+test('every rule file starts as a draft with the confirmation fields', () => {
+  for (const name of RULE_FILES) {
+    const front = parseFrontmatter(scaffold(`rules/${name}`));
+    assert.ok(front, name);
+    assert.equal(front.status, 'draft', name);
+    for (const key of ['confirmed_by', 'confirmed_at']) assert.ok(key in front, `${name}: ${key}`);
+  }
+});
+
+test('the index lists every rule file, every folder, and the steps that read them (spec section 10)', () => {
+  const text = scaffold('skills/studio-rules/SKILL.md');
+  for (const name of RULE_FILES) assert.ok(text.includes(`rules/${name}`), name);
+  for (const item of ['rules/project-template/', 'rules/checks/', 'flows/', 'CHANGELOG.md']) assert.ok(text.includes(item), item);
+  for (const row of [/naming\.md.*build, check/, /project-template.*intake, build/, /motion-system.*plan, build/, /protected\.md.*plan, build/, /delivery\.md.*\| deliver/, /drive\.md.*\| deliver/, /checks\/.*\| check/, /flows\/.*\| intake/]) assert.match(text, row);
+  assert.match(text, /status: draft/);
+  assert.match(text, /Never turn a draft into `confirmed` yourself/);
+  assert.ok(text.includes('${CLAUDE_PLUGIN_ROOT}/rules/'));
+});
+
+test('the version pattern in naming.md is accepted by aep-version and finds the version in a typical name', () => {
+  const pattern = patternFromNamingFile(join(SCAFFOLD, 'rules', 'naming.md'));
+  assert.ok(pattern);
+  compilePattern(pattern);
+  assert.equal(nextVersionName('spring_v07.aep', { pattern }).name, 'spring_v08.aep');
+});
+
+test('the example checks load in ae-lint, and the live checks folder holds no active check yet', () => {
+  const examples = loadChecks(join(SCAFFOLD, 'rules', 'checks', '_examples'));
+  assert.deepEqual(examples.map((c) => c.id).sort(), ['brand-fonts', 'comp-names', 'fps-25', 'no-default-names', 'no-missing-media', 'protected-brand']);
+  assert.deepEqual(loadChecks(join(SCAFFOLD, 'rules', 'checks')), [], 'a fresh studio has no active checks until the designers confirm them');
+  assert.ok(existsSync(join(SCAFFOLD, 'rules', 'checks', 'README.md')));
+});
+
+test('the scaffold keeps tool folders out of the studio repository', () => {
+  const lines = scaffold('.gitignore').split('\n');
+  for (const entry of ['work/', '.motion/', '.claude/', 'CLAUDE.md']) assert.ok(lines.includes(entry), entry);
+});
+
+test('the scaffold has the changelog, the readme, the flows folder and the project template notes', () => {
+  for (const file of ['CHANGELOG.md', 'README.md', 'flows/.gitkeep', 'rules/project-template/README.md']) assert.ok(existsSync(join(SCAFFOLD, file)), file);
+  assert.match(scaffold('README.md'), /init-rules/);
+});
+
+test('the scaffold is also its own catalog: one plugin, same name, relative source', () => {
+  const plugin = JSON.parse(scaffold('.claude-plugin/plugin.json'));
+  const catalog = JSON.parse(scaffold('.claude-plugin/marketplace.json'));
+  assert.equal(catalog.plugins.length, 1);
+  assert.equal(catalog.plugins[0].name, plugin.name, 'entry name equals the manifest name');
+  assert.equal(catalog.plugins[0].source, './');
+  assert.ok(catalog.owner.name);
+});
+
+test('the readme explains the local install, one studio per project, and the unique plugin name', () => {
+  const text = scaffold('README.md');
+  for (const phrase of ['/plugin marketplace add', '--scope project', '<studio>-rules', 'freelancer', 'never at user scope', '/reload-plugins']) assert.ok(text.includes(phrase), phrase);
+});
+
+test('init-rules tells the agent to give the plugin a unique <slug>-rules name in the manifest and the catalog', () => {
+  const text = readFileSync(fileURLToPath(new URL('../skills/init-rules/SKILL.md', import.meta.url)), 'utf8');
+  for (const phrase of ['<slug>-rules', 'marketplace.json', 'unique on this computer', 'must not start with `claude` or `anthropic`']) assert.ok(text.includes(phrase), phrase);
+});
+
+test('init-project asks which studio rules apply and explains the one-time install', () => {
+  const text = readFileSync(fileURLToPath(new URL('../skills/init-project/SKILL.md', import.meta.url)), 'utf8');
+  for (const phrase of ['--rules', '--no-rules', 'claude plugin install', 'exactly one studio']) assert.ok(text.includes(phrase), phrase);
+});
+
+test('after the init-rules renames, the scaffold passes claude plugin validate (when the CLI is available)', (t) => {
+  const probe = spawnSync('claude', ['--version'], { encoding: 'utf8' });
+  if (probe.status !== 0) return t.skip('the claude CLI is not installed');
+  const dir = mkdtempSync(join(tmpdir(), 'mf-scaffold-'));
+  try {
+    cpSync(SCAFFOLD, dir, { recursive: true });
+    for (const name of ['plugin.json', 'marketplace.json']) {
+      const file = join(dir, '.claude-plugin', name);
+      writeFileSync(file, readFileSync(file, 'utf8').replaceAll('"name": "studio-rules"', '"name": "acme-rules"').replaceAll('<studio name>', 'Acme'));
+    }
+    for (const target of [dir, join(dir, '.claude-plugin', 'plugin.json')]) {
+      const result = spawnSync('claude', ['plugin', 'validate', target], { encoding: 'utf8' });
+      assert.equal(result.status, 0, `${target}\n${result.stdout}${result.stderr}`);
+    }
+  } finally { rmSync(dir, { recursive: true, force: true }); }
 });

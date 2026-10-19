@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-//   mf-init [--project <dir>] [--drive alias,alias | --no-drive] [--dry-run]
+//   mf-init [--project <dir>] [--drive alias,alias | --no-drive] [--rules <plugin@marketplace> | --no-rules] [--dry-run]
 import { applyPlan, formatPlan, planInit } from '../lib/init-project.mjs';
 
 const args = process.argv.slice(2);
@@ -13,11 +13,16 @@ if (driveArg !== null && args.includes('--no-drive')) {
   process.stderr.write('init-project: use either --drive or --no-drive, not both.\n');
   process.exit(1);
 }
+const rulesArg = option('--rules');
+if (rulesArg !== null && args.includes('--no-rules')) {
+  process.stderr.write('init-project: use either --rules or --no-rules, not both.\n');
+  process.exit(1);
+}
 // undefined = leave the project's Drive choice as it is
 const drive = args.includes('--no-drive') ? [] : driveArg === null ? undefined : driveArg.split(',').map((a) => a.trim()).filter(Boolean);
 
 try {
-  const plan = planInit({ projectDir: option('--project') ?? process.cwd(), drive });
+  const plan = planInit({ projectDir: option('--project') ?? process.cwd(), drive, rules: rulesArg ?? undefined });
   if (!dryRun) applyPlan(plan);
   process.stdout.write(`${formatPlan(plan, !dryRun)}\n`);
   if (dryRun) process.stdout.write('\nDry run: nothing was written.\n');

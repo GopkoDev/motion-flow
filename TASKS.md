@@ -189,15 +189,15 @@
 
 ## M4. Правила студії
 
-- [ ] **T4.1 Скелет `studio-rules`**
+- [x] **T4.1 Скелет `studio-rules`**
   - Залежності: T3.1.
   - Промпт: «У `../studio-rules` створи скіл-індекс `skills/studio-rules/SKILL.md` і порожні шаблони `rules/*.md` зі `status: draft` за розділом 10 та `templates/rules/`.»
 
-- [ ] **T4.2 Скіл `init-rules`**
+- [x] **T4.2 Скіл `init-rules`**
   - Залежності: T4.1, T1.1, T2.4.
   - Промпт: «Реалізуй `skills/init-rules/SKILL.md` за 4.17.»
 
-- [ ] **T4.3 Попередження про `draft` у скілах**
+- [x] **T4.3 Попередження про `draft` у скілах**
   - Залежності: T4.1.
   - Промпт: «Додай у `plan`, `build`, `check`, `deliver` поведінку: якщо правило зі `status: draft`, попередити. Онови `validate_plugin.mjs`.»
 

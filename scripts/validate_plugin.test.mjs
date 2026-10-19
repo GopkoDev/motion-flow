@@ -132,7 +132,7 @@ function withSteps(mutate = () => {}) {
   return run((root) => {
     for (const name of ['intake', 'plan', 'build', 'check', 'deliver']) {
       const gate = name === 'intake' ? '' : `Run \`mf-gate require ${name}\` first.`;
-      write(root, `skills/${name}/SKILL.md`, STEP(name, gate));
+      write(root, `skills/${name}/SKILL.md`, STEP(name, `${gate} Draft rules say status: draft: warn.`));
     }
     write(root, 'skills/_shared/safety.md', '# safety\n');
     mutate(root);
@@ -145,10 +145,10 @@ test('steps: a valid set of five steps passes', () => {
 
 test('steps: a step that consumes an artifact must call its gate', () => {
   for (const name of ['plan', 'build', 'check', 'deliver']) {
-    const errors = withSteps((r) => write(r, `skills/${name}/SKILL.md`, STEP(name, 'No gate here.')));
+    const errors = withSteps((r) => write(r, `skills/${name}/SKILL.md`, STEP(name, 'No gate here. status: draft')));
     assert.ok(errors.some((e) => e.includes(`must call "mf-gate require ${name}"`)), name);
   }
-  const wrongGate = withSteps((r) => write(r, 'skills/build/SKILL.md', STEP('build', 'Run `mf-gate require plan`.')));
+  const wrongGate = withSteps((r) => write(r, 'skills/build/SKILL.md', STEP('build', 'Run `mf-gate require plan`. status: draft')));
   assert.ok(wrongGate.some((e) => e.includes('"mf-gate require build"')));
   assert.deepEqual(withSteps((r) => write(r, 'skills/intake/SKILL.md', STEP('intake'))), [], 'intake consumes nothing');
 });
@@ -196,4 +196,12 @@ test('a skill longer than 500 lines is reported', () => {
 test('this repository passes every check, including the step gates', () => {
   assert.deepEqual(validatePlugin(join(here, '..')), []);
   assert.ok(existsSync(join(here, '..', 'skills', 'deliver', 'SKILL.md')));
+});
+
+test('steps that read studio rules must say what to do with a draft rule', () => {
+  for (const name of ['plan', 'build', 'check', 'deliver']) {
+    const errors = withSteps((r) => write(r, `skills/${name}/SKILL.md`, STEP(name, `Run \`mf-gate require ${name}\`.`)));
+    assert.ok(errors.some((e) => e.includes(`skills/${name}/SKILL.md`) && e.includes('status: draft')), name);
+  }
+  assert.deepEqual(withSteps((r) => write(r, 'skills/intake/SKILL.md', STEP('intake'))), [], 'intake does not need it');
 });

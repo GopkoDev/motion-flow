@@ -1,0 +1,14 @@
+{
+  "name": "studio-rules",
+  "description": "Studio rules and approved flows for motion-flow.",
+  "owner": {
+    "name": "<studio name>"
+  },
+  "plugins": [
+    {
+      "name": "studio-rules",
+      "source": "./",
+      "description": "Studio rules (naming, motion system, protected, delivery, Drive) and approved flows."
+    }
+  ]
+}
