@@ -329,6 +329,9 @@ class Guard {
     if (inside(this.configDir, path) && mode === 'write') {
       this.verdict.add('deny', `${label} is the drive-gate config directory (~/.motion-flow). The allowlist can only be edited by a person.`);
     }
+    if (mode === 'write' && /(^|\/)\.motion\/drive\.json$/.test(path.split(sep).join('/'))) {
+      this.verdict.add('ask', `${label} sets which Google Drive folders this project may read. Use mf-init --drive, and confirm only if the designer chose exactly this.`);
+    }
     if (mode === 'write' && PROTECTED_WRITE.test(path.split(sep).join('/'))) {
       this.verdict.add('ask', `${label} changes Claude Code settings or plugins, which hold the safety rules. Confirm with the user.`);
     }
@@ -428,6 +431,8 @@ class Guard {
     }
     if (name === 'find') this.analyzeFind(args, cwd, depth);
 
+    this.analyzeSetup(name, args);
+    this.analyzeInit(name, args);
     this.analyzeGit(name, args);
     this.analyzeAe(name, words, args);
 
@@ -443,12 +448,40 @@ class Guard {
         if (arg.startsWith('-') && arg.includes('=')) candidates.push(arg.slice(arg.indexOf('=') + 1));
         else if (arg.startsWith('-')) continue;
         else if (/^[A-Za-z_][A-Za-z0-9_]*=/.test(arg)) candidates.push(arg.slice(arg.indexOf('=') + 1)); // dd of=/path
+        if (mode === 'write' && arg.includes('.motion-flow')) {
+          this.verdict.add('deny', 'This command mentions the drive-gate config directory (~/.motion-flow). The allowlist can only be edited by a person, through mf-setup.');
+        }
         for (const candidate of candidates) {
           if (candidate) this.checkToken(candidate, cwd, RECURSIVE.has(name) && mode === 'read' ? 'list' : mode, name);
         }
       }
     }
     return cwd;
+  }
+
+  /**
+   * mf-setup writes the list of Drive folders available on this computer. No confirmation is needed for its
+   * read-only forms or for the very first setup (no config yet; the designer picked the folders in the skill's
+   * question). Changing an existing config asks for confirmation.
+   */
+  analyzeSetup(name, args) {
+    const viaInterpreter = INTERPRETERS.has(name) && args.some((a) => commandName(a) === 'mf-setup');
+    if (name !== 'mf-setup' && !viaInterpreter) return;
+    if (args.some((a) => ['--detect', '--show', '--dry-run'].includes(a))) return;
+    if (!existsSync(join(this.home, '.motion-flow', 'roots.json'))) return;
+    this.verdict.add('ask', 'mf-setup would change the list of folders the agent may read. Confirm only if the designer chose exactly this change.');
+  }
+
+  /** mf-init --drive changes which Drive folders a project may read; asking is needed when a choice already exists. */
+  analyzeInit(name, args) {
+    const viaInterpreter = INTERPRETERS.has(name) && args.some((a) => commandName(a) === 'mf-init');
+    if (name !== 'mf-init' && !viaInterpreter) return;
+    if (!args.includes('--drive') || args.includes('--dry-run')) return;
+    const at = args.indexOf('--project');
+    const project = at === -1 || args[at + 1] === undefined ? this.projectDir : resolve(this.projectDir, args[at + 1]);
+    if (existsSync(join(project, '.motion', 'drive.json'))) {
+      this.verdict.add('ask', 'mf-init --drive changes which Google Drive folders this project may read. Confirm only if the designer chose exactly this.');
+    }
   }
 
   isSanctionedDriveGate(rawName) {

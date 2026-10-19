@@ -11,6 +11,12 @@
     "motion-flow@motion": true
   },
   "permissions": {
+    "allow": [
+      "Bash(drive-gate)",
+      "Bash(drive-gate *)",
+      "Bash(mf-doctor)",
+      "Bash(mf-doctor *)"
+    ],
     "deny": [
       "Read(//REPLACE/WITH/ABSOLUTE/DRIVE/ROOT/**)",
       "Edit(//REPLACE/WITH/ABSOLUTE/DRIVE/ROOT/**)",

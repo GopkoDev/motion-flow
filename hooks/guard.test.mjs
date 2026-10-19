@@ -232,6 +232,42 @@ test('Claude Code settings and plugins need confirmation to be changed', () => {
   assert.equal(tool('Read', { file_path: join(project, '.claude', 'settings.json') }).decision, 'allow');
 });
 
+// ---------- mf-setup writes the allowlist ----------
+
+test('mf-setup: confirmation only when it changes an existing allowlist', () => {
+  const write = ['mf-setup --root assets=/x/y', 'mf-setup --root a=/x --replace', 'sudo mf-setup --root a=/x',
+    'node bin/mf-setup --root a=/x', 'node "/plugin/bin/mf-setup" --root a=/x', 'sh -c "mf-setup --root a=/x"'];
+  // config exists (the beforeEach roots.json): writing asks
+  expectAll(write, 'ask');
+  // read-only forms never ask
+  expectAll(['mf-setup --detect', 'mf-setup --show', 'mf-setup --dry-run --root assets=/x/y'], 'allow');
+  // first setup (no config yet): no prompt, the designer already chose the folders in the skill
+  rmSync(join(home, '.motion-flow', 'roots.json'));
+  expectAll(write, 'allow');
+});
+
+test('the per-project Drive choice: first choice is free, changing it or editing the file directly asks', () => {
+  const driveFile = join(project, '.motion', 'drive.json');
+  // no choice yet: mf-init --drive just runs
+  expectAll(['mf-init --drive assets', 'mf-init --no-drive', 'mf-init', 'mf-init --dry-run --drive assets'], 'allow');
+  mkdirSync(join(project, '.motion'), { recursive: true });
+  writeFileSync(driveFile, '{"aliases":[]}');
+  // a choice exists: changing it asks; narrowing, dry runs and plain init do not
+  expectAll(['mf-init --drive assets', 'node bin/mf-init --drive assets', 'sudo mf-init --drive a,b', `mf-init --project ${project} --drive assets`], 'ask');
+  expectAll(['mf-init --no-drive', 'mf-init', 'mf-init --dry-run --drive assets'], 'allow');
+  // editing the file with the file tools or the shell asks
+  assert.equal(tool('Write', { file_path: driveFile, content: '{}' }).decision, 'ask');
+  assert.equal(tool('Edit', { file_path: driveFile, old_string: 'a', new_string: 'b' }).decision, 'ask');
+  assert.equal(bash(`echo '{"aliases":["assets"]}' > ${driveFile}`).decision, 'ask');
+  assert.equal(tool('Read', { file_path: driveFile }).decision, 'allow');
+});
+
+test('commands that mention ~/.motion-flow in their arguments cannot write the config', () => {
+  expectAll([`node -e "require('fs').writeFileSync(require('os').homedir()+'/.motion-flow/roots.json','{}')"`,
+    `python3 -c "open('/tmp/.motion-flow/roots.json','w')"`, 'cp x.json ~/.motion-flow/roots.json'], 'deny');
+  expectAll([`cat ~/.motion-flow/roots.json`, 'ls ~/.motion-flow', 'jq . ~/.motion-flow/roots.json'], 'allow');
+});
+
 // ---------- rm / mv ----------
 
 test('rm and mv inside work/ ask for confirmation', () => {

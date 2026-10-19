@@ -1,0 +1,24 @@
+#!/usr/bin/env node
+// Finds Google Drive folders and writes ~/.motion-flow/roots.json (the drive-gate allowlist).
+//   mf-setup --detect                      list Drive folders found on this computer (JSON)
+//   mf-setup --show                        print the current config (JSON)
+//   mf-setup --root alias=/path [...]      write the config (add --dry-run to only check, --replace to overwrite)
+import { buildRoots, detectDriveFolders, readCurrent, writeRoots } from '../lib/setup-drive.mjs';
+
+const args = process.argv.slice(2);
+const roots = [];
+for (let i = 0; i < args.length; i++) if (args[i] === '--root') roots.push(args[++i] ?? '');
+const out = (value) => process.stdout.write(`${JSON.stringify(value, null, 2)}\n`);
+
+try {
+  if (args.includes('--detect')) out({ folders: detectDriveFolders() });
+  else if (args.includes('--show')) out({ config: readCurrent() });
+  else {
+    const { roots: valid } = buildRoots(roots);
+    if (args.includes('--dry-run')) out({ dry_run: true, would_write: { roots: valid, work_dir: 'work' } });
+    else out({ written: writeRoots({ roots: valid, replace: args.includes('--replace') }), roots: valid });
+  }
+} catch (error) {
+  process.stderr.write(`mf-setup: ${error.message}\n`);
+  process.exitCode = 1;
+}
