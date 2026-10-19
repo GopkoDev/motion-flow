@@ -6,7 +6,7 @@ model: inherit
 
 # check
 
-Fourth of five steps. Check proves that what was built is what the plan said, and shows the designer the frames. The designer approves the result (the second human gate). Check judges facts, not beauty: taste stays with the designer.
+Fourth of five steps. Check proves that what was built is what was asked for and what the plan said, and shows the designer the frames. It traces every acceptance criterion of the task to evidence, so something the plan forgot cannot slip through. The designer approves the result (the second human gate). Check judges facts, not beauty: taste stays with the designer.
 
 Before starting, read `${CLAUDE_PLUGIN_ROOT}/skills/_shared/gating.md`, `safety.md`, `artifact-formats.md` and `handoff.md`. Talk to the designer in Ukrainian.
 
@@ -17,16 +17,20 @@ Before starting, read `${CLAUDE_PLUGIN_ROOT}/skills/_shared/gating.md`, `safety.
 3. **Fresh dump.** `ae-dump --project <project_copy> --out work/dumps/after.json`.
 4. **Lint.** If the studio rules have a `checks/` folder (the `studio-rules` skill tells where), run `ae-lint --dump work/dumps/after.json --checks <that folder> --baseline <the snapshot in .motion/snapshots/>`. The baseline is what lets lint notice changes to protected comps. If there is no checks folder, write "lint skipped: no studio checks" in `check.md`; never write a clean lint you did not run.
 5. **Compare with the plan.** For every row of the plan, find the evidence in the fresh dump (a layer count, a duration, fps, a transform value, a keyframe) and write what is actually there. A row passes only when the dump shows what the row expected.
-6. **Render frames.** With `ae-render-frame --project <project_copy> --comp "<comp>" --time <seconds> --out work/frames/step<NN>_t<seconds>s.png` for the frame named in each row, plus the first frame, the last frame, and the middle of each transition mentioned in the plan.
-7. **Look at the frames.** Open each PNG (Read tool) and say whether it shows what the row expected: what is visible, what is missing. State facts ("the logo is in the top right, 120 px wide"); do not give opinions on style. After Effects PNG colors can differ slightly from the viewer, so do not report small color shifts as defects.
-8. **Write `.motion/check.md`** from `${CLAUDE_PLUGIN_ROOT}/templates/check.md`: `task_id` equals the plan's; the table (`#`, expected, actual, verdict), `## Lint` (errors, warnings, skipped checks), `## Кадри` (the list of frame files), `## Відкриті питання`. `verdict: PASS` only if every row passed and lint has no errors; otherwise `ISSUES`.
-9. **Show and ask.** Show the table and the frame paths. Tell the designer to open the frames and look at them. Ask with `AskUserQuestion`: "Approve the result", "Fix issues", "Change the plan".
+6. **Trace the criteria.** For every acceptance criterion of `task.md` (`AC1`, `AC2`, ...) write one row: the evidence (what the dump or a frame shows, with the file), and `PASS`, `FAIL` or `NOT_VERIFIED`. A criterion that cannot be seen in the dump or in a frame is `NOT_VERIFIED`, never `PASS`. Include criteria the plan listed as not covered.
+7. **Render frames.** With `ae-render-frame --project <project_copy> --comp "<comp>" --time <seconds> --out work/frames/step<NN>_t<seconds>s.png` for the frame named in each row, plus the first frame, the last frame, and the middle of each transition mentioned in the plan.
+8. **Look at the frames.** Open each PNG (Read tool) and say whether it shows what the row or criterion expected: what is visible, what is missing. State facts ("the logo is in the top right, 120 px wide"); do not give opinions on style. After Effects PNG colors can differ slightly from the viewer, so do not report small color shifts as defects.
+9. **Independent pass** (`independent-review.md`, "Prompt for check"). A sub-agent that did not take part reads the task, the plan, the dumps and the frames and answers criterion by criterion. Compare its answer with yours. Where it says `NOT_VERIFIED` or `FAIL` and you said `PASS`, look again at the cited evidence and settle it; never keep the friendlier verdict silently. Put its findings under `## Незалежна перевірка` (or `не виконувалась: <причина>` if no sub-agent could run).
+10. **Write `.motion/check.md`** from `${CLAUDE_PLUGIN_ROOT}/templates/check.md`: `task_id` equals the plan's; `## Звірка з планом` (one row per plan step), `## Критерії готовності` (one row per criterion), `## Lint`, `## Кадри` (frame files that exist), `## Незалежна перевірка`, `## Відкриті питання`. `verdict: PASS` only if every row and every criterion is `PASS` and lint has no errors; otherwise `ISSUES`.
+11. **Self-check.** Run `mf-gate verify check`. Fix what fails and run it again (at most twice). If something still fails, show it to the designer plainly.
+12. **Show and ask.** Show both tables (the plan rows and the criteria), the independent pass result and the frame paths. Tell the designer to open the frames and look at them. Ask with `AskUserQuestion`: "Approve the result", "Fix issues", "Change the plan".
    - Approve: run `mf-gate approve check` (one Claude Code confirmation prompt will appear; tell the designer it records their decision). Allowed also when the verdict is `ISSUES`, if the designer decides to accept the issues; say so in the question.
    - Fix issues or change the plan: do not approve. Tell the designer the next command: `/motion-flow:build` for a repeat of a failed step, `/motion-flow:plan` when the plan must change.
-10. **Hand off** (`handoff.md`): `.motion/check.md`, the frames, next command `/motion-flow:deliver` after an approval.
+13. **Hand off** (`handoff.md`): `.motion/check.md`, the self-check line, the frames, next command `/motion-flow:deliver` after an approval. If several things are wrong, name the highest-impact one first: fix one problem at a time.
 
 ## Rules
 
 - Never write `approved: true` or `approved_at` yourself; only `mf-gate approve check` does, after the designer's explicit answer.
 - Never change the project in this step. `ae-dump` and `ae-render-frame` do not change it.
 - Never report a check you did not run. Say "not run" and why.
+- Never mark a criterion `PASS` without evidence you can cite.

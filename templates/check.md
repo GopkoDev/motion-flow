@@ -10,6 +10,12 @@ approved_at: null
 |---|---|---|---|
 | 1 | <from plan.md> | <what the dump or frame shows> | PASS |
 
+## Критерії готовності
+
+| AC | Доказ | Вердикт |
+|---|---|---|
+| AC1 | <what the dump or frame shows, with its file> | PASS |
+
 ## Lint
 
 <Summary of the ae-lint result: errors, warnings, skipped checks.>
@@ -17,6 +23,10 @@ approved_at: null
 ## Кадри
 
 - work/frames/step01_t2.5s.png
+
+## Незалежна перевірка
+
+<what the independent pass found, or "не виконувалась: <reason>">
 
 ## Відкриті питання
 

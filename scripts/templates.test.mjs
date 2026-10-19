@@ -61,9 +61,9 @@ import { readdirSync } from 'node:fs';
 import { parseFrontmatter } from './validate_plugin.mjs';
 
 const TEMPLATES = {
-  'task.md': { keys: ['id', 'type', 'flow', 'status', 'inputs', 'deadline'], headings: ['## Опис', '## Що відомо / припущення'] },
-  'plan.md': { keys: ['task_id', 'status', 'approved_at', 'plan_sha256', 'project_copy', 'touches_protected', 'needs'], headings: ['## Кроки', '## Ризики', '## Питання до людини'] },
-  'check.md': { keys: ['task_id', 'verdict', 'approved', 'approved_at'], headings: ['## Звірка з планом', '## Lint', '## Кадри', '## Відкриті питання'] },
+  'task.md': { keys: ['id', 'type', 'flow', 'status', 'inputs', 'deadline'], headings: ['## Опис', '## Критерії готовності', '## Що відомо / припущення', '## Відкриті питання'] },
+  'plan.md': { keys: ['task_id', 'status', 'approved_at', 'plan_sha256', 'project_copy', 'touches_protected', 'needs'], headings: ['## Кроки', '## Не охоплено планом', '## Ризики', '## Питання до людини'] },
+  'check.md': { keys: ['task_id', 'verdict', 'approved', 'approved_at'], headings: ['## Звірка з планом', '## Критерії готовності', '## Lint', '## Кадри', '## Незалежна перевірка', '## Відкриті питання'] },
   'deliver.md': { keys: ['task_id', 'status', 'delivered_at'], headings: ['## Файли', '## Куди покласти', '## Відкриті питання'] },
   'overrides.md': { keys: ['project'], headings: ['## Винятки з правил студії'] },
   'flow.md': { keys: ['name', 'version', 'owner', 'status', 'needs'], headings: ['## Для чого цей флоу', '## Що його запускає (3 приклади фраз)', '## Входи', '## Кроки по порядку', '## Де рішення людини', '## Що не можна чіпати', '## Як зрозуміти, що готово', '## Приклади (посилання на example/)'] },
@@ -222,4 +222,24 @@ test('after the init-rules renames, the scaffold passes claude plugin validate (
       assert.equal(result.status, 0, `${target}\n${result.stdout}${result.stderr}`);
     }
   } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('the task, plan and check templates carry the criteria columns and rows the gate traces', () => {
+  assert.match(read('task.md'), /- AC1: /);
+  assert.match(read('plan.md'), /\| Кадр для перевірки \| Критерії \|/);
+  assert.match(read('check.md'), /\| AC \| Доказ \| Вердикт \|/);
+});
+
+test('intake, plan and check tell the agent to self-check and, for intake and check, to use an independent pass', () => {
+  const skill = (name) => readFileSync(fileURLToPath(new URL(`../skills/${name}/SKILL.md`, import.meta.url)), 'utf8');
+  for (const [name, artifact] of [['intake', 'task'], ['plan', 'plan'], ['check', 'check']]) assert.match(skill(name), new RegExp(`mf-gate verify ${artifact}`), name);
+  for (const name of ['intake', 'check']) assert.match(skill(name), /independent-review\.md/, name);
+  assert.match(skill('intake'), /acceptance criteria/i);
+  assert.match(skill('plan'), /Every criterion needs a step, and every step needs a criterion/);
+  assert.match(skill('check'), /NOT_VERIFIED/);
+});
+
+test('the independent-review doc holds both prompts and the rules for a sub-agent', () => {
+  const text = readFileSync(fileURLToPath(new URL('../skills/_shared/independent-review.md', import.meta.url)), 'utf8');
+  for (const phrase of ['Prompt for `intake`', 'Prompt for `check`', 'NO_FINDINGS', 'cite its evidence', 'read-only', 'never pick the friendlier verdict silently']) assert.ok(text.includes(phrase), phrase);
 });

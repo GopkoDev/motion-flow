@@ -29,7 +29,7 @@ It prints one JSON object and exits 0 (go on) or 1 (refuse):
 { "ok": false, "step": "build", "reason": "plan_not_approved", "missing": ".motion/plan.md", "create_with": "/motion-flow:plan" }
 ```
 
-Reasons: `file_missing`, `task_not_ready`, `plan_not_approved`, `plan_changed_after_approval`, `task_mismatch`, `build_log_missing`, `build_log_invalid`, `build_failed`, `check_not_approved`. The approve commands can also refuse with `plan_incomplete` or `check_incomplete` (template text still unfilled, no verdict).
+Reasons: `file_missing`, `task_not_ready`, `task_incomplete`, `plan_not_approved`, `plan_changed_after_approval`, `task_mismatch`, `build_log_missing`, `build_log_invalid`, `build_failed`, `check_not_approved`. `approve` can also refuse with `plan_incomplete` or `check_incomplete`: the artifact fails `mf-gate verify` (template text left, a criterion with no step or no evidence, a plan row with no frame, ...). The answer lists the failed items.
 If `mf-gate` is not found, run `node "${CLAUDE_PLUGIN_ROOT}/bin/mf-gate"` instead.
 
 Other commands used by the steps:
@@ -39,6 +39,7 @@ mf-gate hash plan             # prints the sha256 of the plan body (see below)
 mf-gate approve plan          # writes approved: true, approved_at and plan_sha256 into plan.md
 mf-gate approve check         # writes approved: true and approved_at into check.md
 mf-gate status                # one-line state of every artifact
+mf-gate verify <task|plan|check>   # structural self-check of an artifact; run before showing it
 mf-gate archive [--abandon]   # move the finished (or dropped) task's artifacts to .motion/archive/ (see artifact-formats.md)
 ```
 

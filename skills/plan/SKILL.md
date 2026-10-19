@@ -13,7 +13,7 @@ Before starting, read `${CLAUDE_PLUGIN_ROOT}/skills/_shared/gating.md`, `safety.
 ## Steps
 
 1. **Gate.** Run `mf-gate require plan`. If it refuses, give the refusal text from `gating.md` (usually: run `/motion-flow:intake` first) and stop.
-2. **Read the inputs.** `.motion/task.md`. If `.motion/plan.md` already exists, this is a re-plan: read it and tell the designer what you will change.
+2. **Read the inputs.** `.motion/task.md`, especially its acceptance criteria (`AC1`, `AC2`, ...): the plan serves exactly these. If `.motion/plan.md` already exists, this is a re-plan: read it and tell the designer what you will change.
 3. **Check the tools.** If the task names a flow, run `mf-doctor --flow <flow-name>`. If something the flow needs is missing, show the install command from the report and stop; the designer installs it.
 4. **Read the rules.** From the studio rules (`studio-rules` skill): `motion-system`, `protected`, `naming`, `delivery` if they exist, plus `.motion/overrides.md` and the chosen flow's `SKILL.md` and `flow.md`. Draft rules: A studio rule file whose frontmatter says `status: draft` has not been confirmed by a person. When you read one, tell the designer once per step, in Ukrainian, which file and that it is only a draft ("Правило <назва> ще чернетка"), then follow it carefully and ask when it matters. Never treat a draft as settled and never change its status.
 5. **Get the files into `work/`.** Per `drive-access.md`:
@@ -23,14 +23,16 @@ Before starting, read `${CLAUDE_PLUGIN_ROOT}/skills/_shared/gating.md`, `safety.
 7. **Choose the working copy name.** `aep-version work/<path>.aep` prints the next free version name; this goes into `project_copy:`. The copy itself is made by `build`, not now.
 8. **Write `.motion/plan.md`** from `${CLAUDE_PLUGIN_ROOT}/templates/plan.md`, with the Write tool, `status: draft`:
    - `task_id` equals the task's `id`. `needs:` lists the tools the steps use.
-   - `## Кроки`: one row per atomic change. Each row has the target (comp / layer / property, by NAME), the change (concrete values), the expected result (something that can be seen in the dump or in a frame), and the frame to check (comp and time in seconds).
+   - `## Кроки`: one row per atomic change. Each row has the target (comp / layer / property, by NAME), the change (concrete values), the expected result (something that can be seen in the dump or in a frame), the frame to check (comp and time in seconds), and the criteria it serves (`AC` ids in the `Критерії` column).
+   - **Every criterion needs a step, and every step needs a criterion.** A step that serves no criterion is something nobody asked for: leave it out. A criterion that no step can serve goes under `## Не охоплено планом` with the reason, and the designer sees it when approving (write `- немає` when everything is covered).
    - `## Ризики`: what could go wrong and what protects against it. `## Питання до людини`: what the designer must answer first.
    - Use layer and comp names exactly as in the dump. Respect naming and motion rules; if a request conflicts with a rule, do not decide silently: ask (see `socratic-loop.md`).
 9. **Protected things.** Compare every target with `protected` rules. Set `touches_protected: true` if any step touches something protected. In that case do not ask for approval yet: say which step and why, and ask the designer how to proceed (change the plan, or the rule owner must allow it).
-10. **Show and ask.** Print the plan in the chat (the table, the risks, the questions). Then ask with `AskUserQuestion`: "Approve" or "Change the plan". Do not ask when `Питання до людини` still has unanswered questions: ask those first.
+10. **Self-check.** Run `mf-gate verify plan`. Fix what fails and run it again (at most twice). It checks, among other things, that every criterion has a step, every step has a criterion and a frame, and no template text is left. If something still fails, show it to the designer plainly.
+11. **Show and ask.** Print the plan in the chat (the table, the criteria not covered, the risks, the questions). Then ask with `AskUserQuestion`: "Approve" or "Change the plan". Do not ask when `Питання до людини` still has unanswered questions: ask those first.
     - If the designer asks for changes, edit `plan.md`, show the new version, and ask again.
     - If the designer approves, run `mf-gate approve plan`. Claude Code will show one confirmation prompt for this command; tell the designer to approve it, it records their decision. Never run it without the designer's explicit "Approve".
-11. **Hand off** (`handoff.md`): the plan file, "check the table row by row", next command `/motion-flow:build`.
+12. **Hand off** (`handoff.md`): the plan file, the self-check line, "check the table row by row and the criteria it does not cover", next command `/motion-flow:build`.
 
 ## Rules
 

@@ -24,12 +24,15 @@ Frontmatter is flat `key: value` lines between two `---` lines. Lists use `[a, b
 ## task.md
 
 Frontmatter: `id` (date + type + counter, for example `2026-10-19-resize-01`), `type` (`resize|new|edit|export|other`), `flow` (flow name or `null`), `status` (`draft|ready`), `inputs` (list of `alias` + `path`, or just `path` under `work/` in no-Drive projects), `deadline` (or `null`).
-Body sections: `## Опис`, `## Що відомо / припущення`. The assumptions list comes from the Socratic loop. `status: ready` means the plan can start.
+Body sections: `## Опис`, `## Критерії готовності`, `## Що відомо / припущення`, `## Відкриті питання`.
+
+**`## Критерії готовності` is the contract of the whole task.** One line per criterion, `- AC1: <a result a person can see or measure>`, with numbers where possible ("the logo is 120 px wide in the top right", not "the logo looks good"). Ids are `AC1`, `AC2`, ... and never change once the plan is approved. The plan must cover every criterion with a step, and `check` must prove every criterion with evidence, so nothing the designer asked for can be forgotten and nothing nobody asked for gets built. The assumptions list comes from the Socratic loop. `status: ready` means the plan can start (the gate also runs `mf-gate verify task`).
 
 ## plan.md
 
 Frontmatter: `task_id`, `status` (`draft|approved`), `approved_at`, `plan_sha256` (see `gating.md`), `project_copy` (the new copy in `work/`), `touches_protected` (`true|false`), `needs` (tools from `deps.json`, for example `[ffmpeg]`).
-Body: `## Кроки` (a table: `#`, target comp/layer/property, change, expected result, frame to check), `## Ризики`, `## Питання до людини`.
+Body: `## Кроки` (a table: `#`, target comp/layer/property, change, expected result, frame to check, `Критерії`), `## Не охоплено планом`, `## Ризики`, `## Питання до людини`.
+`Критерії` lists the `AC` ids a step serves. Every step must serve at least one criterion (a step with none is a step nobody asked for), and every criterion of the task must be served by a step or be listed under `## Не охоплено планом` with the reason (write `- немає` when everything is covered). The designer sees the uncovered list when approving.
 `status` and `approved_at` are written only by `mf-gate approve plan`.
 
 ## build.log.jsonl
@@ -46,7 +49,7 @@ One JSON object per line, one line per script run, appended in order. **`ae-run 
 ## check.md
 
 Frontmatter: `task_id`, `verdict` (`PASS|ISSUES`), `approved`, `approved_at`.
-Body: `## Звірка з планом` (table: `#`, expected, actual, verdict), `## Lint` (the `ae-lint` result, summarised), `## Кадри` (list of `work/frames/...` files), `## Відкриті питання`.
+Body: `## Звірка з планом` (table: `#`, expected, actual, verdict; one row per plan step), `## Критерії готовності` (table: `AC`, `Доказ` = what the dump or frame shows with its file, `Вердикт` = `PASS|FAIL|NOT_VERIFIED`; one row per criterion of the task), `## Lint` (the `ae-lint` result, summarised), `## Кадри` (list of `work/frames/...` files that exist), `## Незалежна перевірка` (what the independent pass found, or `не виконувалась: <причина>`), `## Відкриті питання`. `verdict: PASS` only when every plan row and every criterion is `PASS`.
 `approved` and `approved_at` are written only by `mf-gate approve check`, after the designer looked at the frames.
 
 ## deliver.md
@@ -69,6 +72,10 @@ Exceptions to the studio rules for this project. One entry per exception: the ru
 ## Starting a new task
 
 `.motion/` holds one task at a time. Before a new task, run `mf-gate archive` (after `deliver`) or `mf-gate archive --abandon` (a task that is dropped, only if the designer says so). It moves `task.md`, `plan.md`, `build.log.jsonl`, `check.md`, `deliver.md` and `snapshots/` into `.motion/archive/<task id>/` and deletes nothing. `state.json`, `drive.json` and `overrides.md` stay. Do not use `mv` or `rm` for this; the guard hook blocks them.
+
+## Structural self-check
+
+`mf-gate verify <task|plan|check>` checks an artifact written by a step, from the file on disk, against a fixed list of structural items (required keys, no template text left, the criteria and their coverage, frames that exist, ...). It prints `self-check: N/N pass` or the failed items. Every step runs it before showing the artifact or asking for approval: fix what failed and run it again, at most twice; anything still failing is shown to the designer plainly, never hidden. `mf-gate approve` refuses an artifact that fails it.
 
 ## Rules
 

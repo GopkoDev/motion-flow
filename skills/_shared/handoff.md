@@ -9,6 +9,7 @@ Every skill ends with the same three-part block, printed to the designer in Ukra
 
 **Що зроблено**
 - <1-3 рядки: які файли записано або змінено>
+- self-check: <N/N pass, або що не пройшло>
 
 **Що перевірити**
 - `.motion/plan.md`: <на що саме подивитись>
@@ -25,7 +26,7 @@ Every skill ends with the same three-part block, printed to the designer in Ukra
 
 ## Rules
 
-- **Що зроблено:** only facts: files written, scripts run, counts. No praise, no plans.
+- **Що зроблено:** only facts: files written, scripts run, counts. No praise, no plans. For a step that writes an artifact, the last line is the structural self-check result from `mf-gate verify` (`self-check: 7/7 pass`, or what is still failing). It is mandatory even when everything passes.
 - **Що перевірити:** real paths relative to the project, one line each, each saying what to look at. Name the file the designer must approve at a gate.
 - **Наступна команда:** one command in its own code block so it can be copied. If a step can be skipped or repeated, add one more line under it saying when. At a gate, the next command is what follows an approval; if the designer wants changes, say how to ask for them.
 - Running `/clear` between steps is recommended but not required, because each step reads its input from disk. Mention it in one short line, for example "Можна зробити /clear перед наступним кроком".

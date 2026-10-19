@@ -9,9 +9,15 @@ needs: []
 ---
 ## Кроки
 
-| # | Ціль (комп/шар/властивість) | Зміна | Очікуваний результат | Кадр для перевірки |
-|---|---|---|---|---|
-| 1 | <comp / layer / property> | <what changes> | <what should be true afterwards> | <comp, time in seconds> |
+| # | Ціль (комп/шар/властивість) | Зміна | Очікуваний результат | Кадр для перевірки | Критерії |
+|---|---|---|---|---|---|
+| 1 | <comp / layer / property> | <what changes> | <what should be true afterwards> | <comp, time in seconds> | AC1 |
+
+## Не охоплено планом
+
+<!-- Criteria of task.md that no step covers, with the reason. Write "- немає" when every criterion has a step. -->
+
+- немає
 
 ## Ризики
 

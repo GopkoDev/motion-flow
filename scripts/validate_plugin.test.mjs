@@ -11,7 +11,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 
 const PLUGIN = { name: 'demo', version: '0.1.0', description: 'Demo', author: { name: 'A' } };
 const MARKET = { name: 'm', owner: { name: 'A' }, plugins: [{ name: 'demo', source: './' }] };
-const SKILL = '---\nname: intake\ndescription: Intake\nmodel: sonnet\n---\nBody. See safety.md.\n';
+const SKILL = '---\nname: intake\ndescription: Intake\nmodel: sonnet\n---\nBody. See safety.md. Run `mf-gate verify task`. Use independent-review.md.\n';
 
 function write(root, rel, content) {
   const p = join(root, rel);
@@ -132,7 +132,10 @@ function withSteps(mutate = () => {}) {
   return run((root) => {
     for (const name of ['intake', 'plan', 'build', 'check', 'deliver']) {
       const gate = name === 'intake' ? '' : `Run \`mf-gate require ${name}\` first.`;
-      write(root, `skills/${name}/SKILL.md`, STEP(name, `${gate} Draft rules say status: draft: warn.`));
+      const verify = { intake: 'task', plan: 'plan', check: 'check' }[name];
+      const self = verify ? `Run \`mf-gate verify ${verify}\`.` : '';
+      const second = ['intake', 'check'].includes(name) ? 'Use independent-review.md.' : '';
+      write(root, `skills/${name}/SKILL.md`, STEP(name, `${gate} ${self} ${second} Draft rules say status: draft: warn.`));
     }
     write(root, 'skills/_shared/safety.md', '# safety\n');
     mutate(root);
@@ -145,16 +148,16 @@ test('steps: a valid set of five steps passes', () => {
 
 test('steps: a step that consumes an artifact must call its gate', () => {
   for (const name of ['plan', 'build', 'check', 'deliver']) {
-    const errors = withSteps((r) => write(r, `skills/${name}/SKILL.md`, STEP(name, 'No gate here. status: draft')));
+    const errors = withSteps((r) => write(r, `skills/${name}/SKILL.md`, STEP(name, 'No gate here. status: draft. mf-gate verify plan mf-gate verify check independent-review.md')));
     assert.ok(errors.some((e) => e.includes(`must call "mf-gate require ${name}"`)), name);
   }
   const wrongGate = withSteps((r) => write(r, 'skills/build/SKILL.md', STEP('build', 'Run `mf-gate require plan`. status: draft')));
   assert.ok(wrongGate.some((e) => e.includes('"mf-gate require build"')));
-  assert.deepEqual(withSteps((r) => write(r, 'skills/intake/SKILL.md', STEP('intake'))), [], 'intake consumes nothing');
+  assert.deepEqual(withSteps((r) => write(r, 'skills/intake/SKILL.md', STEP('intake', 'Run `mf-gate verify task`. Use independent-review.md.'))), [], 'intake consumes nothing');
 });
 
 test('steps: every step must point to the safety rules', () => {
-  const errors = withSteps((r) => write(r, 'skills/check/SKILL.md', '---\nname: check\ndescription: x\nmodel: inherit\n---\nRun `mf-gate require check`.\n'));
+  const errors = withSteps((r) => write(r, 'skills/check/SKILL.md', '---\nname: check\ndescription: x\nmodel: inherit\n---\nRun `mf-gate require check`. mf-gate verify check independent-review.md\n'));
   assert.ok(errors.some((e) => e.includes('skills/check/SKILL.md') && e.includes('safety')));
 });
 
@@ -200,8 +203,23 @@ test('this repository passes every check, including the step gates', () => {
 
 test('steps that read studio rules must say what to do with a draft rule', () => {
   for (const name of ['plan', 'build', 'check', 'deliver']) {
-    const errors = withSteps((r) => write(r, `skills/${name}/SKILL.md`, STEP(name, `Run \`mf-gate require ${name}\`.`)));
+    const errors = withSteps((r) => write(r, `skills/${name}/SKILL.md`, STEP(name, `Run \`mf-gate require ${name}\`. mf-gate verify plan mf-gate verify check independent-review.md`)));
     assert.ok(errors.some((e) => e.includes(`skills/${name}/SKILL.md`) && e.includes('status: draft')), name);
   }
-  assert.deepEqual(withSteps((r) => write(r, 'skills/intake/SKILL.md', STEP('intake'))), [], 'intake does not need it');
+  assert.deepEqual(withSteps((r) => write(r, 'skills/intake/SKILL.md', STEP('intake', 'Run `mf-gate verify task`. Use independent-review.md.'))), [], 'intake does not need it');
+});
+
+test('steps that write an artifact must self-check it with mf-gate verify', () => {
+  for (const [name, artifact] of [['intake', 'task'], ['plan', 'plan'], ['check', 'check']]) {
+    const errors = withSteps((r) => write(r, `skills/${name}/SKILL.md`, STEP(name, `Run \`mf-gate require ${name}\`. Use independent-review.md. status: draft`)));
+    assert.ok(errors.some((e) => e.includes(`skills/${name}/SKILL.md`) && e.includes(`mf-gate verify ${artifact}`)), name);
+  }
+  assert.ok(!withSteps().some((e) => e.includes('mf-gate verify')), 'build and deliver do not need it');
+});
+
+test('intake and check must use an independent pass', () => {
+  for (const name of ['intake', 'check']) {
+    const errors = withSteps((r) => write(r, `skills/${name}/SKILL.md`, STEP(name, `Run \`mf-gate require ${name}\`. mf-gate verify task mf-gate verify check status: draft`)));
+    assert.ok(errors.some((e) => e.includes(`skills/${name}/SKILL.md`) && e.includes('independent pass')), name);
+  }
 });

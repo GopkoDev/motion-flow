@@ -16,6 +16,10 @@ const GATED_STEPS = ['plan', 'build', 'check', 'deliver'];
 const STEP_SKILLS = ['intake', 'plan', 'build', 'check', 'deliver'];
 // Steps that read studio rules must warn when a rule is still a draft.
 const DRAFT_AWARE_STEPS = ['plan', 'build', 'check', 'deliver'];
+// Steps that write an artifact must self-check it with `mf-gate verify <artifact>` and report the result.
+const VERIFY_ARTIFACT = { intake: 'task', plan: 'plan', check: 'check' };
+// Steps that use a second, independent reader.
+const INDEPENDENT_STEPS = ['intake', 'check'];
 
 // Drive is read-only for the agent: no skill may tell it to write, delete, move, rename or share on Drive.
 const DRIVE_WRITE_PATTERNS = [
@@ -169,6 +173,8 @@ function checkStepSkills(root, errors) {
       errors.push(`${rel}: a step that consumes an artifact must call "mf-gate require ${name}"`);
     }
     if (!/_shared\/safety\.md|safety\.md/.test(text)) errors.push(`${rel}: must point to the shared safety rules (safety.md)`);
+    if (VERIFY_ARTIFACT[name] && !new RegExp(`mf-gate\\s+verify\\s+${VERIFY_ARTIFACT[name]}\\b`).test(text)) errors.push(`${rel}: must self-check its artifact with "mf-gate verify ${VERIFY_ARTIFACT[name]}"`);
+    if (INDEPENDENT_STEPS.includes(name) && !/independent-review\.md/.test(text)) errors.push(`${rel}: must use an independent pass (independent-review.md)`);
     if (DRAFT_AWARE_STEPS.includes(name) && !/status: draft/.test(text)) errors.push(`${rel}: must say what to do with a studio rule that has "status: draft" (warn the designer)`);
   }
 }
