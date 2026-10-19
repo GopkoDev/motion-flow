@@ -246,6 +246,12 @@ test('deliver names the project file in work/out/ from project_copy, which alrea
   assert.match(text, /cp -n /);
 });
 
+test('build runs on the plan\'s project_copy only: it resumes on its own copy and never switches to another name', () => {
+  const text = readFileSync(fileURLToPath(new URL('../skills/build/SKILL.md', import.meta.url)), 'utf8');
+  assert.doesNotMatch(text, /run `aep-version` on the source again/, 'a new name would not reach check, which reads project_copy from the plan');
+  for (const phrase of ['never on another name', 'resumed build', 'never pick another name yourself', '/motion-flow:plan']) assert.ok(text.includes(phrase), phrase);
+});
+
 test('plan and deliver pass the studio naming rules to aep-version, so version_regex is used', () => {
   for (const name of ['plan', 'deliver']) {
     const text = readFileSync(fileURLToPath(new URL(`../skills/${name}/SKILL.md`, import.meta.url)), 'utf8');
