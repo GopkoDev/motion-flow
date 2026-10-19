@@ -32,7 +32,7 @@
   - Промпт: «Звір з актуальною документацією Claude Code схеми `plugin.json`, `marketplace.json`, `hooks.json`, `settings.json` (ключі `extraKnownMarketplaces`, `enabledPlugins`, `permissions.deny`) і формат frontmatter у `SKILL.md`. Запиши результат у `docs/schemas-notes.md` з посиланнями і виправ маніфести з T0.1, якщо вони розходяться.»
   - Приймання: нотатка є; кожен пункт **[перевірити]** з розділів 4.1, 4.20, 5.1, 11 закрито або явно позначено відкритим.
 
-- [ ] **T0.3 `validate_plugin.mjs` (базова версія)**
+- [x] **T0.3 `validate_plugin.mjs` (базова версія)**
   - Залежності: T0.2.
   - Промпт: «Реалізуй `scripts/validate_plugin.mjs` за 4.27 з тестами (`node:test`). На цьому етапі перевіряє: валідність маніфестів, наявність `name`, `description`, `model` у кожному `SKILL.md`, розв'язність посилань на `_shared/*.md`. Решту перевірок (gating, заборона `put`) додамо пізніше. Звір ідею інваріантів із `_temp/repos/genkovich__sdd/scripts/validate_plugin.py`, але напиши своє.»
   - Приймання: тести проходять; валідатор зелений на каркасі; навмисно зламаний маніфест дає помилку.
