@@ -1,0 +1,6 @@
+{
+  "name": "motion-flow",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=24" }
+}
