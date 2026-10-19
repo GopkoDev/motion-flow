@@ -179,6 +179,41 @@ function checkStepSkills(root, errors) {
   }
 }
 
+// Flow skills must use the tools that keep a flow safe and versioned.
+const FLOW_SKILL_REQUIRED = {
+  'new-flow': [
+    ['mf-flow check', 'must check the flow it wrote with "mf-flow check"'],
+    ['mf-gate archive --park', 'must set an unfinished task aside with "mf-gate archive --park" before the rehearsal'],
+    ['mf-gate restore', 'must give the task back with "mf-gate restore"'],
+    ['save every open After Effects project', 'must ask the designer to save open After Effects projects before the rehearsal'],
+  ],
+  'refine-flow': [
+    ['mf-flow bump', 'must raise the version with "mf-flow bump"'],
+    ['mf-flow check', 'must check the flow with "mf-flow check"'],
+    ['Never edit an installed studio-rules copy', 'must never edit an installed studio-rules copy'],
+  ],
+  'publish-flow': [
+    ['mf-flow check', 'must check the flow with "mf-flow check"'],
+    ['mf-flow pack', 'must pack the flow with "mf-flow pack"'],
+    ['Never write, copy or move anything on Drive', 'must state that nothing is written to Drive'],
+    ['Never mark a flow `reviewed` or `approved`', 'must leave the approval to the reviewer'],
+  ],
+  'whats-new': [
+    ['mf-whatsnew', 'must use "mf-whatsnew"'],
+    ['last_seen_rules_version', 'must keep last_seen_rules_version in state.json'],
+  ],
+};
+
+function checkFlowSkills(root, errors) {
+  for (const [name, required] of Object.entries(FLOW_SKILL_REQUIRED)) {
+    const file = join(root, 'skills', name, 'SKILL.md');
+    if (!existsSync(file)) continue;
+    const text = readFileSync(file, 'utf8');
+    for (const [phrase, message] of required) if (!text.includes(phrase)) errors.push(`skills/${name}/SKILL.md: ${message}`);
+    if (!/safety\.md/.test(text)) errors.push(`skills/${name}/SKILL.md: must point to the shared safety rules (safety.md)`);
+  }
+}
+
 function checkDriveWrites(root, errors) {
   const dirs = [join(root, 'skills'), join(root, 'templates')];
   for (const dir of dirs) {
@@ -242,6 +277,7 @@ export function validatePlugin(root) {
   checkSkills(root, errors);
   checkSharedRefs(root, errors);
   checkStepSkills(root, errors);
+  checkFlowSkills(root, errors);
   checkDriveWrites(root, errors);
   checkSkillSize(root, errors);
   checkDeps(root, errors);

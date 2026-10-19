@@ -5,7 +5,7 @@ The private rules and approved flows of the studio, used by the `motion-flow` pl
 - `skills/studio-rules/SKILL.md`: the index motion-flow steps read.
 - `rules/`: naming, motion system, protected elements, delivery, Drive, the project template, and `ae-lint` checks. Every file is `status: draft` until a person has read it and confirmed it.
 - `flows/`: approved flows, one folder each.
-- `CHANGELOG.md`: what changed (read by `/motion-flow:whats-new`).
+- `CHANGELOG.md`: what changed, one `## x.y.z` heading per release, flows named as flow `<name>`: ... (read by `/motion-flow:whats-new`).
 
 Fill the rules in with `/motion-flow:init-rules`, which interviews the designers and reads reference projects. A rule becomes `confirmed` only when a person has read it, changed `status` to `confirmed`, filled in `confirmed_by` and `confirmed_at`, and committed it.
 

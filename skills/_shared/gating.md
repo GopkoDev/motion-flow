@@ -39,8 +39,9 @@ mf-gate hash plan             # prints the sha256 of the plan body (see below)
 mf-gate approve plan          # writes approved: true, approved_at and plan_sha256 into plan.md
 mf-gate approve check         # writes approved: true and approved_at into check.md
 mf-gate status                # one-line state of every artifact
+mf-gate restore [<task id>]   # bring an archived or parked task back into .motion/
 mf-gate verify <task|plan|check>   # structural self-check of an artifact; run before showing it
-mf-gate archive [--abandon]   # move the finished (or dropped) task's artifacts to .motion/archive/ (see artifact-formats.md)
+mf-gate archive [--abandon | --park]   # move the finished (or dropped) task's artifacts to .motion/archive/ (see artifact-formats.md)
 ```
 
 ## Refusal text

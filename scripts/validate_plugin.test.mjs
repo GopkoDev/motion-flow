@@ -223,3 +223,21 @@ test('intake and check must use an independent pass', () => {
     assert.ok(errors.some((e) => e.includes(`skills/${name}/SKILL.md`) && e.includes('independent pass')), name);
   }
 });
+
+const FLOW_SKILL_TEXT = {
+  'new-flow': 'mf-flow check. mf-gate archive --park. mf-gate restore. Ask to save every open After Effects project.',
+  'refine-flow': 'mf-flow bump. mf-flow check. Never edit an installed studio-rules copy.',
+  'publish-flow': 'mf-flow check. mf-flow pack. Never write, copy or move anything on Drive. Never mark a flow `reviewed` or `approved`.',
+  'whats-new': 'mf-whatsnew. last_seen_rules_version.',
+};
+const flowSkill = (name, text) => `${SKILL.replace('name: intake', `name: ${name}`)}${text}\n`;
+
+test('flow skills must use the tools that keep flows safe and versioned', () => {
+  for (const [name, text] of Object.entries(FLOW_SKILL_TEXT)) {
+    assert.deepEqual(run((r) => write(r, `skills/${name}/SKILL.md`, flowSkill(name, text))), [], name);
+    for (const sentence of text.split('. ').map((p) => p.replace(/\.$/, '')).filter(Boolean)) {
+      const errors = run((r) => write(r, `skills/${name}/SKILL.md`, flowSkill(name, text.replace(sentence, 'x'))));
+      assert.ok(errors.some((e) => e.includes(`skills/${name}/SKILL.md`)), `${name}: ${sentence}`);
+    }
+  }
+});

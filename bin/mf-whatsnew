@@ -1,0 +1,4 @@
+#!/usr/bin/env node
+import { main } from '../lib/whats-new.mjs';
+
+process.exitCode = main(process.argv.slice(2));
