@@ -454,7 +454,7 @@ needs: [ffmpeg]
 
 All rules have frontmatter `status: draft|confirmed`, `confirmed_by`, `confirmed_at`. Skills warn when they read a `draft`.
 
-- **`skills/studio-rules/SKILL.md`**: the rules index. `description`: "Rules of studio <name>: naming, motion-system, delivery, Drive, protected". Body: the list of files and when to read each (a table from the visual diagram: naming → build/check, project-template → intake/build, motion-system → plan/build, protected → plan/build, delivery → deliver, drive → deliver, checks → check, flows → intake).
+- **`skills/studio-rules/SKILL.md`**: the rules index. `description`: "Rules of studio <name>: naming, motion-system, delivery, Drive, protected". Body: the list of files and when to read each (naming → plan/build/check/deliver, project-template → intake/build, motion-system → plan/build, protected → plan/build/check, delivery → plan/deliver, drive → deliver/publish-flow, checks → check, flows → intake).
 - **`rules/naming.md`**: templates for file, version, comp, layer and precomp names; examples of right and wrong; a regex for `ae-lint`.
 - **`rules/motion-system.md`**: easing curves, standard timings (in frames and seconds), palette, fonts, the brand's motion rules, what is forbidden.
 - **`rules/protected.md`**: what must not be touched (reference comps, brand precomps), whom to call if a change is needed.

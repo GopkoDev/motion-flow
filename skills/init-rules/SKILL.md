@@ -8,7 +8,7 @@ model: inherit
 
 Runs once per studio, inside a checkout of the studio-rules repository. It learns the studio's conventions from what already exists (folder names, finished projects) and from the designers, and writes **drafts** of the rule files. A person must read and confirm each rule; this skill never does.
 
-Before starting, read `${CLAUDE_PLUGIN_ROOT}/skills/_shared/safety.md`, `socratic-loop.md`, `drive-access.md`, `artifact-formats.md` and `handoff.md` (all in `${CLAUDE_PLUGIN_ROOT}/skills/_shared/`). Talk to the designer in Ukrainian; write the rule files in the language the designers use (Ukrainian by default), keeping file names and commands as they are.
+Before starting, read `${CLAUDE_PLUGIN_ROOT}/skills/_shared/safety.md`, `socratic-loop.md`, `drive-access.md`, `artifact-formats.md` and `handoff.md` (all in `${CLAUDE_PLUGIN_ROOT}/skills/_shared/`). Talk to the designer in Ukrainian. Write the rule files in **English**, like the flows: they are read by every step and shared with the team and the tools. Quote names that must match exactly (layer, comp and render template names) as they are in After Effects. After writing, retell each file to the designer in Ukrainian.
 
 ## Steps
 
@@ -30,7 +30,7 @@ Before starting, read `${CLAUDE_PLUGIN_ROOT}/skills/_shared/safety.md`, `socrati
    - how assets are collected for a project; the project template (frame rate, size, color settings, folders);
    - what the studio motion system says about easing, timings, palette and fonts, and what is forbidden.
    Do not ask what the dumps already answer; ask whether it is correct.
-6. **Write the drafts.** Fill `rules/naming.md`, `motion-system.md`, `protected.md`, `delivery.md`, `drive.md` and `rules/project-template/README.md` from the scaffold's sections, in the designers' own words.
+6. **Write the drafts.** Fill `rules/naming.md`, `motion-system.md`, `protected.md`, `delivery.md`, `drive.md` and `rules/project-template/README.md` from the scaffold's sections, keeping the meaning of what the designers said.
    - Every file keeps `status: draft` with `confirmed_by` and `confirmed_at` empty. Never write `status: confirmed`.
    - Mark each statement that comes from observation and is not confirmed by the designer with `TODO: confirm`.
    - Set `version_regex` in `naming.md` only if the version pattern is clear; otherwise leave the default and mark it.

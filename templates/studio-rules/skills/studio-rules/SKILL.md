@@ -12,12 +12,12 @@ Rule files are in `${CLAUDE_PLUGIN_ROOT}/rules/`.
 
 | File | What it holds | Read it in |
 |---|---|---|
-| `rules/naming.md` | file, version, comp, layer and precomp names, with right and wrong examples and the version pattern | build, check |
+| `rules/naming.md` | file, version, comp, layer and precomp names, with right and wrong examples and the version pattern | plan, build, check, deliver |
 | `rules/project-template/` | the template project (fps, size, color, folder structure) | intake, build |
 | `rules/motion-system.md` | easing curves, standard timings, palette, fonts, brand motion rules, what is forbidden | plan, build |
-| `rules/protected.md` | what must not be touched and who to ask | plan, build |
-| `rules/delivery.md` | formats, codecs, bitrate, sizes, safe zones, audio levels, where finals go | deliver |
-| `rules/drive.md` | Drive folder aliases (no machine paths), tree structure, version rules, where flow drafts wait for review | deliver |
+| `rules/protected.md` | what must not be touched and who to ask | plan, build, check |
+| `rules/delivery.md` | formats, codecs, bitrate, sizes, safe zones, audio levels, where finals go | plan, deliver |
+| `rules/drive.md` | Drive folder aliases (no machine paths), tree structure, version rules, where flow drafts wait for review | deliver, publish-flow |
 | `rules/checks/` | declarative checks for `ae-lint` (JSON files) | check |
 | `flows/` | approved flows, one folder each | intake |
 

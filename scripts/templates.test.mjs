@@ -153,7 +153,7 @@ test('the index lists every rule file, every folder, and the steps that read the
   const text = scaffold('skills/studio-rules/SKILL.md');
   for (const name of RULE_FILES) assert.ok(text.includes(`rules/${name}`), name);
   for (const item of ['rules/project-template/', 'rules/checks/', 'flows/', 'CHANGELOG.md']) assert.ok(text.includes(item), item);
-  for (const row of [/naming\.md.*build, check/, /project-template.*intake, build/, /motion-system.*plan, build/, /protected\.md.*plan, build/, /delivery\.md.*\| deliver/, /drive\.md.*\| deliver/, /checks\/.*\| check/, /flows\/.*\| intake/]) assert.match(text, row);
+  for (const row of [/naming\.md.*\| plan, build, check, deliver \|/, /project-template.*\| intake, build \|/, /motion-system.*\| plan, build \|/, /protected\.md.*\| plan, build, check \|/, /delivery\.md.*\| plan, deliver \|/, /drive\.md.*\| deliver, publish-flow \|/, /checks\/.*\| check \|/, /flows\/.*\| intake \|/]) assert.match(text, row);
   assert.match(text, /status: draft/);
   assert.match(text, /Never turn a draft into `confirmed` yourself/);
   assert.ok(text.includes('${CLAUDE_PLUGIN_ROOT}/rules/'));
@@ -199,7 +199,7 @@ test('the readme explains the local install, one studio per project, and the uni
 
 test('init-rules tells the agent to give the plugin a unique <slug>-rules name in the manifest and the catalog', () => {
   const text = readFileSync(fileURLToPath(new URL('../skills/init-rules/SKILL.md', import.meta.url)), 'utf8');
-  for (const phrase of ['<slug>-rules', 'marketplace.json', 'unique on this computer', 'must not start with `claude` or `anthropic`']) assert.ok(text.includes(phrase), phrase);
+  for (const phrase of ['<slug>-rules', 'marketplace.json', 'unique on this computer', 'must not start with `claude` or `anthropic`', 'Write the rule files in **English**']) assert.ok(text.includes(phrase), phrase);
 });
 
 test('init-project asks which studio rules apply and explains the one-time install', () => {
