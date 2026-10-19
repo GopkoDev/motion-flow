@@ -2,5 +2,8 @@
   "name": "motion-flow",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=24" }
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "test": "node --test \"scripts/**/*.test.mjs\" \"lib/**/*.test.mjs\" \"hooks/**/*.test.mjs\" \"bin/**/*.test.mjs\""
+  }
 }
