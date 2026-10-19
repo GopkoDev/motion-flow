@@ -232,6 +232,43 @@ test('Claude Code settings and plugins need confirmation to be changed', () => {
   assert.equal(tool('Read', { file_path: join(project, '.claude', 'settings.json') }).decision, 'allow');
 });
 
+// ---------- approvals belong to a person ----------
+
+test('mf-gate approve asks for confirmation; the read-only gate commands do not', () => {
+  expectAll(['mf-gate approve plan', 'mf-gate approve check', 'sudo mf-gate approve plan', 'node bin/mf-gate approve plan', 'sh -c "mf-gate approve check"'], 'ask');
+  expectAll(['mf-gate require build', 'mf-gate hash plan', 'mf-gate status'], 'allow');
+});
+
+test('the file tools cannot write an approval into plan.md or check.md, but can write them otherwise', () => {
+  const plan = join(project, '.motion', 'plan.md');
+  const check = join(project, '.motion', 'check.md');
+  const approvals = ['status: approved', '---\nstatus: approved\n---', 'approved: true', 'plan_sha256: ' + 'a'.repeat(64), 'approved_at: 2026-10-19T10:00:00Z', '  approved: true'];
+  for (const text of approvals) {
+    assert.equal(tool('Write', { file_path: plan, content: `task_id: x\n${text}\n` }).decision, 'deny', text);
+    assert.equal(tool('Edit', { file_path: check, old_string: 'approved: false', new_string: text }).decision, 'deny', text);
+  }
+  assert.equal(tool('Write', { file_path: plan, content: '---\ntask_id: x\nstatus: draft\napproved_at: null\nplan_sha256: null\n---\n## Кроки\n' }).decision, 'allow');
+  assert.equal(tool('Write', { file_path: check, content: '---\nverdict: PASS\napproved: false\n---\n' }).decision, 'allow');
+  assert.equal(tool('Write', { file_path: join(project, '.motion', 'task.md'), content: 'status: approved\n' }).decision, 'allow', 'only plan.md and check.md hold approvals');
+  assert.equal(tool('Write', { file_path: join(project, 'notes.md'), content: 'approved: true\n' }).decision, 'allow');
+});
+
+test('shell writes to plan.md or check.md ask; reads do not', () => {
+  expectAll([`sed -i '' 's/draft/approved/' .motion/plan.md`, `echo "approved: true" >> .motion/check.md`, `tee .motion/plan.md`, `cp x .motion/plan.md`], 'ask');
+  expectAll(['cat .motion/plan.md', 'grep approved .motion/check.md', 'mf-gate hash plan'], 'allow');
+});
+
+// ---------- the build log is written only by ae-run ----------
+
+test('the build log cannot be written by hand: file tools are denied, shell writes are denied, reads are fine', () => {
+  const log = join(project, '.motion', 'build.log.jsonl');
+  assert.equal(tool('Write', { file_path: log, content: '{"step":1,"ok":true}\n' }).decision, 'deny');
+  assert.equal(tool('Edit', { file_path: log, old_string: 'false', new_string: 'true' }).decision, 'deny');
+  expectAll([`echo '{"step":1,"ok":true}' >> .motion/build.log.jsonl`, 'tee .motion/build.log.jsonl', 'cp x .motion/build.log.jsonl', `sed -i '' s/false/true/ .motion/build.log.jsonl`, 'rm .motion/build.log.jsonl'], 'deny');
+  assert.equal(tool('Read', { file_path: log }).decision, 'allow');
+  expectAll(['cat .motion/build.log.jsonl', 'tail -n 3 .motion/build.log.jsonl', 'mf-gate require check', 'ae-run --project work/p.aep --script jsx/01.jsx --undo x --step 1'], 'allow');
+});
+
 // ---------- mf-setup writes the allowlist ----------
 
 test('mf-setup: confirmation only when it changes an existing allowlist', () => {

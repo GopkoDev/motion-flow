@@ -277,6 +277,10 @@ const AE_BINARIES = /^(afterfx|aerender|adobe after effects.*|extendscript.*|est
 const SANCTIONED = new Set(['ae-run', 'ae-dump', 'ae-render-frame', 'ae-lint', 'aep-version']);
 const AE_TEXT = /DoScriptFile|DoScript\b|afterfx|aerender|Adobe After Effects|ExtendScript/i;
 const GIT_VALUE_OPTIONS = new Set(['-C', '-c', '--git-dir', '--work-tree', '--namespace', '--exec-path', '--super-prefix']);
+const BUILD_LOG = /(^|\/)\.motion\/build\.log\.jsonl$/;
+const GATE_FILE = /(^|\/)\.motion\/(plan|check)\.md$/;
+// Approval fields: only `mf-gate approve` may write them, after the designer approved.
+const APPROVAL_FIELDS = /^[ \t]*(status:[ \t]*approved|approved:[ \t]*true|plan_sha256:[ \t]*[0-9a-fA-F]{16,}|approved_at:[ \t]*\d)/m;
 const PROTECTED_WRITE = /(^|\/)\.claude\/(settings(\.local)?\.json|plugins(\/|$))/;
 
 function commandName(raw) {
@@ -306,6 +310,7 @@ class Guard {
     this.workDir = realish(resolve(env.projectDir, env.workDir ?? 'work'));
     this.pluginBin = env.pluginRoot ? realish(join(env.pluginRoot, 'bin')) : null;
     this.verdict = new Verdict();
+    this.inShell = false;
   }
 
   driveRoot(path) {
@@ -328,6 +333,12 @@ class Guard {
     }
     if (inside(this.configDir, path) && mode === 'write') {
       this.verdict.add('deny', `${label} is the drive-gate config directory (~/.motion-flow). The allowlist can only be edited by a person.`);
+    }
+    if (mode === 'write' && BUILD_LOG.test(path.split(sep).join('/')) && !this.allowBuildLog) {
+      this.verdict.add('deny', `${label} is the build log. Only ae-run writes it (ae-run ... --step N), so that it records what really ran. Do not edit it by hand.`);
+    }
+    if (mode === 'write' && this.inShell && GATE_FILE.test(path.split(sep).join('/'))) {
+      this.verdict.add('ask', `${label} holds a human approval (plan or check). Edit it with the file tools, never with the shell; approvals are written only by mf-gate approve.`);
     }
     if (mode === 'write' && /(^|\/)\.motion\/drive\.json$/.test(path.split(sep).join('/'))) {
       this.verdict.add('ask', `${label} sets which Google Drive folders this project may read. Use mf-init --drive, and confirm only if the designer chose exactly this.`);
@@ -365,6 +376,7 @@ class Guard {
   }
 
   analyzeShell(text, cwd, depth = 0) {
+    this.inShell = true;
     if (depth > MAX_DEPTH) {
       this.verdict.add('ask', 'The command is nested too deeply to check. Confirm with the user.');
       return;
@@ -433,6 +445,7 @@ class Guard {
 
     this.analyzeSetup(name, args);
     this.analyzeInit(name, args);
+    this.analyzeGate(name, args);
     this.analyzeGit(name, args);
     this.analyzeAe(name, words, args);
 
@@ -470,6 +483,15 @@ class Guard {
     if (args.some((a) => ['--detect', '--show', '--dry-run'].includes(a))) return;
     if (!existsSync(join(this.home, '.motion-flow', 'roots.json'))) return;
     this.verdict.add('ask', 'mf-setup would change the list of folders the agent may read. Confirm only if the designer chose exactly this change.');
+  }
+
+  /** mf-gate approve records a human approval: Claude Code must show it to the designer. */
+  analyzeGate(name, args) {
+    const viaInterpreter = INTERPRETERS.has(name) && args.some((a) => commandName(a) === 'mf-gate');
+    if (name !== 'mf-gate' && !viaInterpreter) return;
+    if (args.includes('approve')) {
+      this.verdict.add('ask', 'mf-gate approve records the designer\'s approval. Confirm only if the designer has just approved this plan or check (they saw it and said yes).');
+    }
   }
 
   /** mf-init --drive changes which Drive folders a project may read; asking is needed when a choice already exists. */
@@ -577,6 +599,14 @@ export function evaluate(payload, env) {
     const mode = toolName === 'Write' || toolName === 'Edit' || toolName === 'NotebookEdit' ? 'write'
       : toolName === 'Glob' || toolName === 'Grep' ? 'list' : 'read';
     for (const value of pathsOf(toolName, input)) guard.checkToken(value, cwdReal, mode, toolName.toLowerCase());
+    if (mode === 'write') {
+      const target = input.file_path ?? input.notebook_path ?? '';
+      const written = `${input.content ?? ''}\n${input.new_string ?? ''}`;
+      const resolved = typeof target === 'string' && target ? resolveToken(target, cwdReal, env.home) : null;
+      if (resolved && GATE_FILE.test(resolved.split(sep).join('/')) && APPROVAL_FIELDS.test(written)) {
+        guard.verdict.add('deny', 'This would write an approval (status: approved, approved: true, plan_sha256 or approved_at) into a plan or check. Approvals are written only by `mf-gate approve`, after the designer approved. Show the plan or check to the designer and ask.');
+      }
+    }
     if (toolName === 'Grep' && !input.path) {
       // searching from the cwd: refuse only if the cwd contains a Drive root
       guard.checkPath(cwdReal, 'list', 'The search directory');

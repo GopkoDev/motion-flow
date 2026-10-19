@@ -4,10 +4,34 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parseDeps } from '../lib/doctor.mjs';
 
 const SEMVER = /^\d+\.\d+\.\d+$/;
 const KEBAB = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 const REQUIRED_SKILL_FIELDS = ['name', 'description', 'model'];
+const MAX_SKILL_LINES = 500;
+
+// Steps that consume an earlier artifact must start with the gate for their own step, and follow the safety rules.
+const GATED_STEPS = ['plan', 'build', 'check', 'deliver'];
+const STEP_SKILLS = ['intake', 'plan', 'build', 'check', 'deliver'];
+
+// Drive is read-only for the agent: no skill may tell it to write, delete, move, rename or share on Drive.
+const DRIVE_WRITE_PATTERNS = [
+  [/drive-gate\s+(put|rm|mv|delete|remove|rename|share|write|upload|cp)\b/, 'a drive-gate write command (drive-gate has none)'],
+  [/\b(trash_file|update_file|share_file|create_file|copy_file)\b/, 'a Drive write tool'],
+  [/\b(gdrive|rclone)\b/, 'a tool that writes to Drive'],
+];
+
+// Frontmatter keys every artifact template must have (spec section 8).
+const TEMPLATE_KEYS = {
+  'task.md': ['id', 'type', 'flow', 'status', 'inputs', 'deadline'],
+  'plan.md': ['task_id', 'status', 'approved_at', 'plan_sha256', 'project_copy', 'touches_protected', 'needs'],
+  'check.md': ['task_id', 'verdict', 'approved', 'approved_at'],
+  'deliver.md': ['task_id', 'status', 'delivered_at'],
+  'overrides.md': ['project'],
+  'flow.md': ['name', 'version', 'owner', 'status', 'needs'],
+  'flow-SKILL.md': ['name', 'description', 'model'],
+};
 
 /** Parses a flat `key: value` frontmatter block. Returns null when there is none. */
 export function parseFrontmatter(text) {
@@ -133,6 +157,73 @@ function checkSharedRefs(root, errors) {
   }
 }
 
+function checkStepSkills(root, errors) {
+  for (const name of STEP_SKILLS) {
+    const rel = `skills/${name}/SKILL.md`;
+    const file = join(root, rel);
+    if (!existsSync(file)) continue; // a missing skill is reported by checkSkills when the folder exists
+    const text = readFileSync(file, 'utf8');
+    if (GATED_STEPS.includes(name) && !new RegExp(`mf-gate\\s+require\\s+${name}\\b`).test(text)) {
+      errors.push(`${rel}: a step that consumes an artifact must call "mf-gate require ${name}"`);
+    }
+    if (!/_shared\/safety\.md|safety\.md/.test(text)) errors.push(`${rel}: must point to the shared safety rules (safety.md)`);
+  }
+}
+
+function checkDriveWrites(root, errors) {
+  const dirs = [join(root, 'skills'), join(root, 'templates')];
+  for (const dir of dirs) {
+    for (const file of markdownFiles(dir)) {
+      const rel = file.slice(root.length + 1).split('\\').join('/');
+      readFileSync(file, 'utf8').split('\n').forEach((line, index) => {
+        for (const [pattern, what] of DRIVE_WRITE_PATTERNS) {
+          if (pattern.test(line)) errors.push(`${rel}:${index + 1}: mentions ${what}`);
+        }
+      });
+    }
+  }
+}
+
+function checkSkillSize(root, errors) {
+  for (const name of listSkillDirs(root)) {
+    if (name.startsWith('_')) continue;
+    const file = join(root, 'skills', name, 'SKILL.md');
+    if (existsSync(file) && readFileSync(file, 'utf8').split('\n').length > MAX_SKILL_LINES) errors.push(`skills/${name}/SKILL.md: longer than ${MAX_SKILL_LINES} lines; move detail into a shared file`);
+  }
+}
+
+function checkDeps(root, errors) {
+  const file = join(root, 'deps.json');
+  if (!existsSync(file)) return; // a plugin without dependencies is fine
+  try {
+    parseDeps(readFileSync(file, 'utf8'));
+  } catch (e) {
+    errors.push(e.message);
+  }
+}
+
+function checkTemplates(root, errors) {
+  const dir = join(root, 'templates');
+  if (!existsSync(dir)) return;
+  for (const [name, keys] of Object.entries(TEMPLATE_KEYS)) {
+    const file = join(dir, name);
+    if (!existsSync(file)) continue;
+    const front = parseFrontmatter(readFileSync(file, 'utf8'));
+    if (!front) { errors.push(`templates/${name}: frontmatter is missing`); continue; }
+    for (const key of keys) if (!(key in front)) errors.push(`templates/${name}: frontmatter key "${key}" is missing`);
+  }
+}
+
+function checkHookScripts(root, errors) {
+  const file = join(root, 'hooks', 'hooks.json');
+  if (!existsSync(file)) return;
+  let text;
+  try { text = readFileSync(file, 'utf8'); } catch { return; }
+  for (const match of text.matchAll(/\$\{CLAUDE_PLUGIN_ROOT\}\/([A-Za-z0-9_./-]+)/g)) {
+    if (!existsSync(join(root, match[1]))) errors.push(`hooks/hooks.json: the script ${match[1]} does not exist`);
+  }
+}
+
 /** Runs all checks against a plugin root. Returns the list of error strings. */
 export function validatePlugin(root) {
   const errors = [];
@@ -141,6 +232,12 @@ export function validatePlugin(root) {
   checkHooks(root, errors);
   checkSkills(root, errors);
   checkSharedRefs(root, errors);
+  checkStepSkills(root, errors);
+  checkDriveWrites(root, errors);
+  checkSkillSize(root, errors);
+  checkDeps(root, errors);
+  checkTemplates(root, errors);
+  checkHookScripts(root, errors);
   return errors;
 }
 

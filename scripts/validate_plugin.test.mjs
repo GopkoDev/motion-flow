@@ -11,7 +11,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 
 const PLUGIN = { name: 'demo', version: '0.1.0', description: 'Demo', author: { name: 'A' } };
 const MARKET = { name: 'm', owner: { name: 'A' }, plugins: [{ name: 'demo', source: './' }] };
-const SKILL = '---\nname: intake\ndescription: Intake\nmodel: sonnet\n---\nBody\n';
+const SKILL = '---\nname: intake\ndescription: Intake\nmodel: sonnet\n---\nBody. See safety.md.\n';
 
 function write(root, rel, content) {
   const p = join(root, rel);
@@ -120,4 +120,80 @@ test('CLI: green on this repo, exit 1 on a broken plugin', () => {
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
+});
+
+// ---------- T3.8: gating in steps, Drive writes, deps.json, templates, hooks ----------
+
+import { existsSync } from 'node:fs';
+
+const STEP = (name, extra = '') => `---\nname: ${name}\ndescription: ${name} step\nmodel: inherit\n---\nFollow _shared/safety.md.\n${extra}\n`;
+
+function withSteps(mutate = () => {}) {
+  return run((root) => {
+    for (const name of ['intake', 'plan', 'build', 'check', 'deliver']) {
+      const gate = name === 'intake' ? '' : `Run \`mf-gate require ${name}\` first.`;
+      write(root, `skills/${name}/SKILL.md`, STEP(name, gate));
+    }
+    write(root, 'skills/_shared/safety.md', '# safety\n');
+    mutate(root);
+  });
+}
+
+test('steps: a valid set of five steps passes', () => {
+  assert.deepEqual(withSteps(), []);
+});
+
+test('steps: a step that consumes an artifact must call its gate', () => {
+  for (const name of ['plan', 'build', 'check', 'deliver']) {
+    const errors = withSteps((r) => write(r, `skills/${name}/SKILL.md`, STEP(name, 'No gate here.')));
+    assert.ok(errors.some((e) => e.includes(`must call "mf-gate require ${name}"`)), name);
+  }
+  const wrongGate = withSteps((r) => write(r, 'skills/build/SKILL.md', STEP('build', 'Run `mf-gate require plan`.')));
+  assert.ok(wrongGate.some((e) => e.includes('"mf-gate require build"')));
+  assert.deepEqual(withSteps((r) => write(r, 'skills/intake/SKILL.md', STEP('intake'))), [], 'intake consumes nothing');
+});
+
+test('steps: every step must point to the safety rules', () => {
+  const errors = withSteps((r) => write(r, 'skills/check/SKILL.md', '---\nname: check\ndescription: x\nmodel: inherit\n---\nRun `mf-gate require check`.\n'));
+  assert.ok(errors.some((e) => e.includes('skills/check/SKILL.md') && e.includes('safety')));
+});
+
+test('no skill or template may tell the agent to write to Drive', () => {
+  for (const line of ['drive-gate put a.txt', 'run drive-gate rm x', 'drive-gate mv a b', 'drive-gate share x', 'use trash_file on it', 'call update_file', 'rclone copy x remote:', 'gdrive upload x']) {
+    const errors = run((r) => write(r, 'skills/intake/SKILL.md', `${SKILL}${line}\n`));
+    assert.ok(errors.some((e) => e.includes('skills/intake/SKILL.md:') && /write|Drive/.test(e)), line);
+  }
+  assert.ok(run((r) => write(r, 'templates/note.md', 'drive-gate put x\n')).some((e) => e.startsWith('templates/note.md:')));
+  assert.deepEqual(run((r) => write(r, 'skills/intake/SKILL.md', `${SKILL}drive-gate fetch assets a.txt --to work/\ndrive-gate ls assets\n`)), []);
+});
+
+test('deps.json: a valid file passes, a broken one is reported', () => {
+  const dep = { name: 'tool', check: 'tool --version', version_regex: 'v(\\d+)', min_version: '1', install: { macos: 'a', windows: 'b' }, required_by: [] };
+  assert.deepEqual(run((r) => write(r, 'deps.json', [dep])), []);
+  assert.ok(run((r) => write(r, 'deps.json', '{ nope')).some((e) => e.includes('deps.json is not valid JSON')));
+  assert.ok(run((r) => write(r, 'deps.json', [{ ...dep, install: {} }])).some((e) => e.includes('install needs')));
+  assert.ok(run((r) => write(r, 'deps.json', [dep, dep])).some((e) => e.includes('duplicate name')));
+});
+
+test('templates: frontmatter keys are checked', () => {
+  const plan = '---\ntask_id: x\nstatus: draft\napproved_at: null\nplan_sha256: null\nproject_copy: a\ntouches_protected: false\nneeds: []\n---\n';
+  assert.deepEqual(run((r) => write(r, 'templates/plan.md', plan)), []);
+  assert.ok(run((r) => write(r, 'templates/plan.md', plan.replace('plan_sha256: null\n', ''))).some((e) => e.includes('templates/plan.md: frontmatter key "plan_sha256" is missing')));
+  assert.ok(run((r) => write(r, 'templates/check.md', 'no frontmatter')).some((e) => e.includes('templates/check.md: frontmatter is missing')));
+  assert.deepEqual(run((r) => write(r, 'templates/unknown.md', 'anything')), [], 'unlisted templates are not checked');
+});
+
+test('hooks: a script the hook points at must exist', () => {
+  const hooks = { hooks: { PreToolUse: [{ matcher: 'Bash', hooks: [{ type: 'command', command: 'node', args: ['${CLAUDE_PLUGIN_ROOT}/hooks/guard.mjs'] }] }] } };
+  assert.ok(run((r) => write(r, 'hooks/hooks.json', hooks)).some((e) => e.includes('hooks/guard.mjs does not exist')));
+  assert.deepEqual(run((r) => { write(r, 'hooks/hooks.json', hooks); write(r, 'hooks/guard.mjs', '// guard'); }), []);
+});
+
+test('a skill longer than 500 lines is reported', () => {
+  assert.ok(run((r) => write(r, 'skills/intake/SKILL.md', `${SKILL}${'line\n'.repeat(520)}`)).some((e) => e.includes('longer than 500 lines')));
+});
+
+test('this repository passes every check, including the step gates', () => {
+  assert.deepEqual(validatePlugin(join(here, '..')), []);
+  assert.ok(existsSync(join(here, '..', 'skills', 'deliver', 'SKILL.md')));
 });
