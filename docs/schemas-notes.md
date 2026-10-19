@@ -47,8 +47,8 @@ Note: `docs.claude.com/en/docs/claude-code/...` URLs from the spec now 301-redir
   or an object: `github` (`repo`, optional `ref`, `sha`), `url` (any git URL), `git-subdir`, `npm`, `archive`, `command`.
 - **Decision (2026-10-19):** no separate `motion-marketplace` repo for now. The catalog lives in this repo as
   `.claude-plugin/marketplace.json` (self-marketplace, entry `source: "./"`, like SDD). Install id: `motion-flow@motion`.
-  Add with `/plugin marketplace add GopkoDev/motion-flow`. When `studio-rules` exists, add it as a second entry
-  (`github` source) here, or move the catalog to the studio repo.
+  Add with `/plugin marketplace add GopkoDev/motion-flow`. (Update, spec 16.1: the studio rules are not added
+  here; each `<slug>-rules` folder is its own one-plugin catalog.)
 - Private repo (`studio-rules`): cloned with the user's own git credentials (HTTPS credential helper or SSH key
   without passphrase prompt). Claude Code never prompts. Each designer needs working git access.
   Setting `CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1` forces HTTPS for `owner/repo` shorthand.
@@ -79,11 +79,12 @@ Note: `docs.claude.com/en/docs/claude-code/...` URLs from the spec now 301-redir
   Exit 2 wins even if JSON says allow. **Any other non-zero exit is non-blocking** (the action proceeds), so guard.mjs
   must catch its own errors and decide explicitly (fail closed with exit 2 on unexpected input).
 - Timeout: a timed-out PreToolUse command does not block the call by default. `"onFailure": "block"` exists
-  (Claude Code 2.1.295 or newer) — **open**: decide in T1.4 whether to require it, since designers' versions are unknown.
+  (Claude Code 2.1.295 or newer). **Decided in T1.4:** `hooks.json` uses `"onFailure": "block"`; the README asks for
+  Claude Code 2.1.295 or newer.
 - Tool names: `Read`, `Write`, `Edit`, `Bash`, `NotebookEdit`, `Glob`, `Grep`, `PowerShell`, `Monitor`.
-- **Spec gap (decide in T1.4):** the spec matches only `Read|Write|Edit|Bash`. Files can also be reached via
-  `Glob`, `Grep`, `NotebookEdit`, `PowerShell` (Windows) and `Monitor` (runs commands). Recommend adding them
-  to the matcher, otherwise the Drive allowlist can be bypassed with `Grep`/`PowerShell`.
+- **Spec gap (closed in T1.4):** the spec matched only `Read|Write|Edit|Bash`. Files can also be reached via
+  `Glob`, `Grep`, `NotebookEdit`, `PowerShell` (Windows) and `Monitor` (runs commands), so the matcher now lists
+  all of them (spec 4.20).
 
 ## 4. Project `settings.json` (spec 11) — fixed
 
@@ -95,7 +96,8 @@ Note: `docs.claude.com/en/docs/claude-code/...` URLs from the spec now 301-redir
   ```
   Entries in a repo's `.claude/settings.json` apply only after the user accepts the workspace-trust dialog.
 - `enabledPlugins`: object `"plugin@marketplace" -> boolean`:
-  `{"motion-flow@motion": true, "studio-rules@motion": true}`. Matches spec.
+  `{"motion-flow@motion": true, "acme-rules@acme-rules": true}` (spec 16.1: the rules plugin is `<slug>-rules`
+  from its own catalog, exactly one per project).
   Important: committing this enables the plugin but does **not** install it. Each designer still runs
   `claude plugin install <name>@motion --scope project` once. The README (T6.2) and `doctor` must say so.
 - `permissions.deny`: array of rule strings.
@@ -112,10 +114,10 @@ Note: `docs.claude.com/en/docs/claude-code/...` URLs from the spec now 301-redir
   - MCP tools: `mcp__<server>__<tool>` or `mcp__<server>__*`. Rules with parentheses on `mcp__` tools are skipped.
     Tool-name globs are allowed in deny (`mcp__*`).
   - Bash: `Bash(git push *)` style, prefix/wildcard; fragile for arguments, so pair with the hook.
-- **Open (T1.5):** exact MCP names for Drive tools. In this environment the connector tools appear as
+- **Closed in T1.5 (verify on a designer machine):** exact MCP names for Drive tools. In this environment the connector tools appear as
   `mcp__claude_ai_Google_Drive__trash_file`, `...__update_file`, `...__share_file` (also `create_file`, `copy_file`).
-  Names depend on how the designer connects Drive; use the observed names plus verify on a designer machine. Consider also
-  denying `create_file`/`copy_file`, which are writes too (spec lists only three).
+  Names depend on how the designer connects Drive; the template denies all five observed names, `create_file` and
+  `copy_file` included, since they are writes too.
 
 ## 5. `SKILL.md` frontmatter (spec 4.27, T0.3) — confirmed
 
@@ -128,8 +130,8 @@ Note: `docs.claude.com/en/docs/claude-code/...` URLs from the spec now 301-redir
   Keep `SKILL.md` under 500 lines.
 - Plugin skills are invoked `/plugin:skill`, e.g. `/motion-flow:plan`. A frontmatter `name` replaces the
   directory name as the last segment. Matches the handoff command in spec 4.3.
-- `skills/_shared/` has no `SKILL.md`; confirm in T0.3 that the loader does not treat it as a skill
-  (docs say a skill is a directory containing `SKILL.md`) — **open**, verify with `claude plugin validate`.
+- `skills/_shared/` has no `SKILL.md`, so the loader does not treat it as a skill (a skill is a directory containing
+  `SKILL.md`). Closed: `claude plugin validate` passes and `validate_plugin.mjs` skips `_shared/` (T0.3).
 
 ## 6. Other spec items checked
 
@@ -141,8 +143,8 @@ Note: `docs.claude.com/en/docs/claude-code/...` URLs from the spec now 301-redir
 | Spec place | Item | Status |
 |---|---|---|
 | 4.1 | `plugin.json` schema | confirmed |
-| 4.20 | hooks schema | confirmed; additions: exit-2 semantics, wider matcher, Windows exec form (open) |
+| 4.20 | hooks schema | confirmed; exit-2 semantics, wider matcher and `onFailure: block` adopted; Windows exec form open until T2.9 |
 | 5.1 | marketplace `source` schema | fixed (catalog moved into this repo, self-marketplace) |
-| 11 | `extraKnownMarketplaces`, `enabledPlugins`, `permissions.deny` | confirmed; fixed `Write` to `Edit`; MCP names open until T1.5 |
-| 4.7/4.27 | `SKILL.md` frontmatter | confirmed; `_shared/` handling open |
+| 11 | `extraKnownMarketplaces`, `enabledPlugins`, `permissions.deny` | confirmed; fixed `Write` to `Edit`; MCP names set in T1.5, to verify on a designer machine |
+| 4.7/4.27 | `SKILL.md` frontmatter | confirmed; `_shared/` handling confirmed |
 | 4.4, 4.2 | SDD file names | not in T0.2 scope |

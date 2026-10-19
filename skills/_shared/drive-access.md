@@ -18,7 +18,7 @@ How every skill reads files that live on Google Drive. Drive is read-only for th
 ```
 drive-gate ls <alias> [subpath]
 drive-gate info <alias> <relpath> [--checksum]
-drive-gate fetch <alias> <relpath> --to work/ [--with-deps --deps-from <dump.json>] [--timeout S]
+drive-gate fetch <alias> <relpath> --to work/ [--with-deps --deps-from <dump.json>] [--timeout S] [--overwrite]
 drive-gate log [--tail N]
 ```
 

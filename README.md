@@ -103,7 +103,7 @@ sequenceDiagram
 
 | Needed | Why |
 |---|---|
-| Claude Code (CLI, desktop app or IDE extension) | Hosts the plugin. |
+| Claude Code 2.1.295 or newer (CLI, desktop app or IDE extension) | Hosts the plugin. Older versions let a tool call through when the guard hook times out (`onFailure: block`). |
 | Node.js 24 or newer | All plugin tools are Node scripts with no external packages. |
 | Adobe After Effects (macOS or Windows) | Only needed to build and check. Planning, linting and the rest work without it. |
 | ffmpeg 5 or newer | Probing and converting delivery files. |
@@ -356,7 +356,7 @@ Rules for contributing:
 | Milestone | State |
 |---|---|
 | M0 skeleton, M1 safety and Drive, M2 running JSX in AE, M3 five steps, M4 studio rules, M5 flows | Implemented and tested without After Effects. |
-| M3a acceptance criteria, independent pass, `mf-gate verify` | Done. Motion-quality lint warnings, `matchName` dump keys, a pitfalls library, destructive-step markers and reference images in `intake` are planned. |
+| M3a acceptance criteria, independent pass, `mf-gate verify` | Done; `intake` also takes a reference image as direction. Motion-quality lint warnings, `matchName` dump keys, a pitfalls library, destructive-step markers and better question wording in `intake` are planned. |
 | Manual checks on a machine with After Effects (T2.9, T3.9, T4.4, T5.5) | Pending. Launching scripts, rendering frames, BOM/UTF-8 handling and Windows paths are not yet verified on real AE. |
 | M6 evals, pilot | Planned. |
 | `ae-export` (automatic video export) | Not built; for now you export from AE into `work/out/`. |

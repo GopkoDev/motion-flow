@@ -33,6 +33,8 @@ Decisions taken:
 
 > **Change (section 16, item 1):** there is no separate `motion-marketplace` repo: the catalog (`marketplace.json`) lives in `motion-flow` itself. The `studio-rules` scaffold lives in `motion-flow/templates/studio-rules/`, and a studio creates its own repo from it (`init-rules`). The rules plugin has a unique name `<studio>-rules`.
 
+> **Change (sections 16.2, 16.3, 16.5, 16.6):** the tree below is the first edition. Also present now: the skills `setup` and `init-project`, `_shared/independent-review.md`, and the tools `mf-gate`, `mf-flow`, `mf-init`, `mf-setup`, `mf-doctor`, `mf-sum`, `mf-whatsnew`. `DRIVE.md` was not created: its content lives in `skills/_shared/drive-access.md`. There is no `LICENSE` yet (16.5.3).
+
 ```
 motion-marketplace/                  # public or private, the catalog
   .claude-plugin/marketplace.json
@@ -147,7 +149,7 @@ Description format: **Purpose**, **Contents**, **Taken from**.
 
 > **Change (section 16.6):** intake agrees the **acceptance criteria** (`AC1`, `AC2`...) with the designer, and after writing `task.md` runs an **independent pass** (a sub-agent without history looks for ambiguities, and every finding is closed: clarify, defer or reject) and runs `mf-gate verify task`. It asks only blocking facts and decides matters of taste itself.
 - **Purpose:** accept the task and choose the flow.
-- **Contents:** frontmatter (`name`, `description`, `model: inherit`). Steps: (1) load `studio-rules` (the index); (2) read the flow index (the `description` of all flows in `studio-rules/flows/` and `.claude/skills/`); (3) determine the type (new, revision, resize, export, other); (4) find a flow, or propose `/motion-flow:new-flow`, or go the generic way; (5) ask only what is missing (input files by alias, target formats, deadline); (6) write `.motion/task.md`; (7) hand off to `plan`.
+- **Contents:** frontmatter (`name`, `description`, `model: inherit`). Steps: (1) load `studio-rules` (the index); (2) read the flow index (the `description` of all flows in `studio-rules/flows/` and `.claude/skills/`); (3) determine the type (new, edit, resize, export, other); (4) find a flow, or propose `/motion-flow:new-flow`, or go the generic way; (5) ask only what is missing (input files by alias, target formats, deadline); (6) write `.motion/task.md`; (7) hand off to `plan`.
 - **Taken from:** `survey`/`specify` in SDD (the interview structure), `_shared/socratic-loop.md`. The quick/standard/full routes of SDD (`.route`) are not taken for now.
 
 ### 4.10 `skills/plan/SKILL.md`
@@ -250,6 +252,8 @@ The full specification is in section 6.
 - **Rule:** the plugin's own scripts have no external npm dependencies (only Node built-in modules), so `node_modules` is not needed. If a dependency is still needed, pin it with a lock file. Nothing global.
 
 ### 4.25 `DRIVE.md`
+
+> **Change:** not created as a separate file; the agent's Drive rules are `skills/_shared/drive-access.md` (4.8), the tree of a studio is in `rules/drive.md`.
 - **Purpose:** a readme for the agent about Drive.
 - **Contents:** what aliases are; what the tree looks like (filled in by `studio-rules/rules/drive.md`); rules: never touch a Drive folder path directly; always `info` before `fetch`; work only with the copy in `work/`; write nothing to Drive; on an error stop and ask; the pitfalls of stream mode and `.gdoc/.gsheet`.
 
@@ -299,7 +303,7 @@ Language: Node.js (ESM, `.mjs`), built-in modules only, no external dependencies
 **Commands (all write JSON to stdout, a non-zero exit code on error):**
 - `ls <alias> [subpath]`: a list of files and folders with sizes and modification dates.
 - `info <alias> <relpath>`: size, date, whether the file is downloaded locally (stream mode), a checksum on request.
-- `fetch <alias> <relpath> --to work/ [--with-deps]`: copies a file into `work/` keeping relative paths. For `.aep`, `--with-deps` copies the structure the project references (from the dump) so links do not break. It checks the size after copying, waits for a stream file to download (with a timeout), and compares checksums.
+- `fetch <alias> <relpath> --to work/ [--with-deps --deps-from <dump.json>] [--timeout S] [--overwrite]`: copies a file into `work/` keeping relative paths; an existing copy is replaced only with `--overwrite`. For `.aep`, `--with-deps` copies the structure the project references (from the dump) so links do not break. It checks the size after copying, waits for a stream file to download (with a timeout), and compares checksums.
 - `log [--tail N]`: reads the call log.
 
 **Invariants:**
@@ -505,6 +509,8 @@ All rules have frontmatter `status: draft|confirmed`, `confirmed_by`, `confirmed
 
 ## 14. What we deliberately do not do (for now)
 
+> **Change (section 16.6):** an independent pass by a sub-agent without history was added to `intake` and `check`. Still not done: a separate permanent reviewer agent and gating across ten stages.
+
 - The brief, storyboard and animation-spec stages as separate steps.
 - A separate independent review agent and gating across ten stages.
 - Writing to Drive (`put`) and a backend over the Drive API.
@@ -541,8 +547,8 @@ This section records how the implementation differs from the first edition of th
 4. Duplicated protection: `guard` reads the computer's config, so it blocks all Drive folders in all projects, regardless of the project's choice.
 
 ### 16.3 Gating and the log
-1. `mf-gate` (`require`, `hash`, `approve`, `status`, `archive`) implements section 3 in code. The plan hash is computed from the body (CRLF→LF, no trailing whitespace); `status` and `approved_at` are not part of the hash.
-2. Refusal reasons: `file_missing`, `task_not_ready`, `plan_not_approved`, `plan_changed_after_approval`, `task_mismatch`, `build_log_missing`, `build_log_invalid`, `build_failed`, `check_not_approved`; `approve` also has `plan_incomplete`, `check_incomplete`.
+1. `mf-gate` (`require`, `hash`, `approve`, `status`, `verify`, `archive`, `restore`) implements section 3 in code. The plan hash is computed from the body (CRLF→LF, no trailing whitespace); `status` and `approved_at` are not part of the hash.
+2. Refusal reasons: `file_missing`, `task_not_ready`, `task_incomplete`, `plan_not_approved`, `plan_changed_after_approval`, `task_mismatch`, `build_log_missing`, `build_log_invalid`, `build_failed`, `check_not_approved`; `approve` also has `plan_incomplete`, `check_incomplete`; `archive` has `not_delivered`; `restore` has `not_found`, `task_in_progress`.
 3. `mf-gate approve` always shows the Claude Code confirmation dialog (`guard`), and writing the approval fields (`status: approved`, `approved: true`, `approved_at`, `plan_sha256`) with file tools is forbidden.
 4. `build.log.jsonl` is written only by `ae-run --step`; for runs that did not reach the script (timeout, refusal) a line with `ok: false` is written too.
 5. `.motion/` holds one task; a new one begins after `mf-gate archive [--abandon]` (moves the artifacts and the task's `jsx/` scripts to `.motion/archive/<id>/`, deletes nothing, because `mv`/`rm` are blocked for the agent).

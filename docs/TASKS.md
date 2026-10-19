@@ -1,6 +1,6 @@
 # TASKS: Motion Flow implementation plan
 
-Specification: `docs/motion-flow-spec.md`. Reference repos: `_temp/repos/`. Diagrams: `_temp/motion-flow-diagram.md`. The original Ukrainian spec and task list are kept in `_temp/uk/`.
+Specification: `docs/motion-flow-spec.md`. Reference repos: `_temp/repos/`. Diagrams: `_temp/motion-flow-diagram.md`. The original Ukrainian spec and task list are kept in `_temp/uk/`. `_temp/` is local to the maintainer's machine and gitignored: it is not part of the repository.
 
 ## How to use
 
@@ -226,6 +226,7 @@ The comparison with `motion-design-with-claude`, aedev-tools, SDD and `skill-cre
 - [ ] **T3.17 References and question quality in `intake`**
   - Dependencies: T3.3.
   - Prompt: "In `intake` accept a reference image or video (a path in `work/`, a direction, not pixel for pixel) and strengthen the wording of the questions: in each option explain what happens next and the hidden downside; ask only blocking facts (size, fps, duration, source). Evaluate the change on a real task (T3.9)."
+  - Status: partly done with T3.10 (spec 16.6): `intake` takes a reference as direction and asks only blocking facts. Left: the option wording (what happens next, the hidden downside) and the evaluation on a real task.
 
 ---
 
@@ -292,7 +293,7 @@ The comparison with `motion-design-with-claude`, aedev-tools, SDD and `skill-cre
 
 ## Closing the questions of section 13
 
-- [ ] Claude Code schemas verified (T0.2).
+- [x] Claude Code schemas verified (T0.2, `docs/schemas-notes.md`).
 - [ ] Licenses of the reference repos verified (before using any fragment).
 - [ ] The JSX launch mechanism verified on real AE versions (T2.9).
 - [ ] Designers' AE/OS version, Drive mode (stream/mirror), presence of git, whisper: find out before M4.
