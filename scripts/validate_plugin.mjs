@@ -20,6 +20,11 @@ const DRAFT_AWARE_STEPS = ['plan', 'build', 'check', 'deliver'];
 const VERIFY_ARTIFACT = { intake: 'task', plan: 'plan', check: 'check' };
 // Steps that use a second, independent reader.
 const INDEPENDENT_STEPS = ['intake', 'check'];
+// Steps whose independent reader is a plugin agent with a clean context.
+const STEP_AGENTS = { check: 'motion-flow:check-reviewer' };
+const REQUIRED_AGENT_FIELDS = ['name', 'description', 'model', 'tools'];
+// Plugin agents are reviewers: they read and report, never write or run commands.
+const READ_ONLY_TOOLS = ['Read', 'Grep', 'Glob'];
 
 // Drive is read-only for the agent: no skill may tell it to write, delete, move, rename or share on Drive.
 const DRIVE_WRITE_PATTERNS = [
@@ -175,7 +180,25 @@ function checkStepSkills(root, errors) {
     if (!/_shared\/safety\.md|safety\.md/.test(text)) errors.push(`${rel}: must point to the shared safety rules (safety.md)`);
     if (VERIFY_ARTIFACT[name] && !new RegExp(`mf-gate\\s+verify\\s+${VERIFY_ARTIFACT[name]}\\b`).test(text)) errors.push(`${rel}: must self-check its artifact with "mf-gate verify ${VERIFY_ARTIFACT[name]}"`);
     if (INDEPENDENT_STEPS.includes(name) && !/independent-review\.md/.test(text)) errors.push(`${rel}: must use an independent pass (independent-review.md)`);
+    if (STEP_AGENTS[name] && !text.includes(`subagent_type: "${STEP_AGENTS[name]}"`)) errors.push(`${rel}: must run its independent pass with the agent "${STEP_AGENTS[name]}"`);
     if (DRAFT_AWARE_STEPS.includes(name) && !/status: draft/.test(text)) errors.push(`${rel}: must say what to do with a studio rule that has "status: draft" (warn the designer)`);
+  }
+}
+
+function checkAgents(root, errors) {
+  for (const file of markdownFiles(join(root, 'agents'))) {
+    const rel = file.slice(root.length + 1).split('\\').join('/');
+    const fm = parseFrontmatter(readFileSync(file, 'utf8'));
+    if (!fm) { errors.push(`${rel}: frontmatter is missing`); continue; }
+    for (const f of REQUIRED_AGENT_FIELDS) if (!fm[f]) errors.push(`${rel}: frontmatter "${f}" is required`);
+    const base = rel.split('/').pop().replace(/\.md$/, '');
+    if (fm.name && fm.name !== base) errors.push(`${rel}: name "${fm.name}" must match the file name "${base}"`);
+    const extra = (fm.tools ?? '').split(',').map((s) => s.trim()).filter((s) => s && !READ_ONLY_TOOLS.includes(s));
+    if (extra.length) errors.push(`${rel}: an agent may use only ${READ_ONLY_TOOLS.join(', ')}; remove ${extra.join(', ')}`);
+  }
+  for (const [step, agent] of Object.entries(STEP_AGENTS)) {
+    const name = agent.split(':').pop();
+    if (existsSync(join(root, 'skills', step, 'SKILL.md')) && !existsSync(join(root, 'agents', `${name}.md`))) errors.push(`agents/${name}.md is missing (the ${step} step runs it)`);
   }
 }
 
@@ -215,7 +238,7 @@ function checkFlowSkills(root, errors) {
 }
 
 function checkDriveWrites(root, errors) {
-  const dirs = [join(root, 'skills'), join(root, 'templates')];
+  const dirs = [join(root, 'skills'), join(root, 'templates'), join(root, 'agents')];
   for (const dir of dirs) {
     for (const file of markdownFiles(dir)) {
       const rel = file.slice(root.length + 1).split('\\').join('/');
@@ -278,6 +301,7 @@ export function validatePlugin(root) {
   checkSharedRefs(root, errors);
   checkStepSkills(root, errors);
   checkFlowSkills(root, errors);
+  checkAgents(root, errors);
   checkDriveWrites(root, errors);
   checkSkillSize(root, errors);
   checkDeps(root, errors);

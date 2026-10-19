@@ -207,6 +207,10 @@ The comparison with `motion-design-with-claude`, aedev-tools, SDD and `skill-cre
 - [x] **T3.12 `mf-gate verify` and the self-check line**
   - Done: `mf-gate verify <task|plan|check>`, `require plan` → `task_incomplete`, `approve` checks the artifact, the line `self-check: N/N pass` is mandatory in the handoff; the validator requires `mf-gate verify` in `intake`, `plan`, `check`.
 
+- [x] **T3.18 A clean-context reviewer agent for `check`**
+  - Dependencies: T3.11.
+  - Done: `agents/check-reviewer.md` (`motion-flow:check-reviewer`), read-only (Read, Grep, Glob), modelled on the `agents/reviewer` of SDD in our own words; `check` dispatches it with file paths only; `validate_plugin.mjs` checks agent frontmatter, read-only tools and the dispatch.
+
 - [ ] **T3.13 Machine warnings about motion quality in `ae-lint`**
   - Dependencies: T2.7, T3.12.
   - Prompt: "Add to `ae-lint` check types based on motion-quality diagnostics (warnings only): linear interpolation on the first and last keys, all layers start and end on the same frames, the same duration in all animations, `wiggle` without meaningful parameters, entrance through opacity only. Examples in `templates/studio-rules/rules/checks/_examples/`. Tests on fixtures. Do not copy the reference texts, write in your own words."

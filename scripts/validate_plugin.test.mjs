@@ -134,13 +134,16 @@ function withSteps(mutate = () => {}) {
       const gate = name === 'intake' ? '' : `Run \`mf-gate require ${name}\` first.`;
       const verify = { intake: 'task', plan: 'plan', check: 'check' }[name];
       const self = verify ? `Run \`mf-gate verify ${verify}\`.` : '';
-      const second = ['intake', 'check'].includes(name) ? 'Use independent-review.md.' : '';
+      const second = { intake: 'Use independent-review.md.', check: 'Use independent-review.md: subagent_type: "motion-flow:check-reviewer".' }[name] ?? '';
       write(root, `skills/${name}/SKILL.md`, STEP(name, `${gate} ${self} ${second} Draft rules say status: draft: warn.`));
     }
     write(root, 'skills/_shared/safety.md', '# safety\n');
+    write(root, 'agents/check-reviewer.md', AGENT);
     mutate(root);
   });
 }
+
+const AGENT = '---\nname: check-reviewer\ndescription: Read-only reviewer\nmodel: inherit\ntools: Read, Grep, Glob\n---\nRead the files and report.\n';
 
 test('steps: a valid set of five steps passes', () => {
   assert.deepEqual(withSteps(), []);
@@ -240,4 +243,22 @@ test('flow skills must use the tools that keep flows safe and versioned', () => 
       assert.ok(errors.some((e) => e.includes(`skills/${name}/SKILL.md`)), `${name}: ${sentence}`);
     }
   }
+});
+
+test('check must run its independent pass with the clean-context check-reviewer agent, and the agent must exist', () => {
+  const check = (text) => withSteps((r) => write(r, 'skills/check/SKILL.md', STEP('check', `Run \`mf-gate require check\`. mf-gate verify check. status: draft. ${text}`)));
+  assert.deepEqual(check('Use independent-review.md: subagent_type: "motion-flow:check-reviewer".'), []);
+  assert.ok(check('Use independent-review.md with a general-purpose sub-agent.').some((e) => e.includes('motion-flow:check-reviewer')));
+  assert.ok(withSteps((r) => rmSync(join(r, 'agents/check-reviewer.md'))).some((e) => e.includes('agents/check-reviewer.md is missing')));
+});
+
+test('agents need name, description, model and tools, a name that matches the file, and read-only tools', () => {
+  assert.deepEqual(withSteps(), []);
+  assert.ok(withSteps((r) => write(r, 'agents/check-reviewer.md', AGENT.replace('model: inherit\n', ''))).some((e) => e.includes('"model" is required')));
+  assert.ok(withSteps((r) => write(r, 'agents/check-reviewer.md', AGENT.replace('name: check-reviewer', 'name: other'))).some((e) => e.includes('must match the file name')));
+  for (const tool of ['Write', 'Edit', 'Bash', 'NotebookEdit']) {
+    const errors = withSteps((r) => write(r, 'agents/check-reviewer.md', AGENT.replace('Read, Grep, Glob', `Read, ${tool}`)));
+    assert.ok(errors.some((e) => e.includes(`remove ${tool}`)), tool);
+  }
+  assert.ok(withSteps((r) => write(r, 'agents/check-reviewer.md', `${AGENT}drive-gate put x\n`)).some((e) => e.startsWith('agents/check-reviewer.md:')), 'agents are scanned for Drive writes too');
 });

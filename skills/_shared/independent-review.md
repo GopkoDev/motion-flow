@@ -4,7 +4,7 @@ Used by `intake` (to find ambiguities in a task) and `check` (to verify a result
 
 ## How to run it
 
-1. Use the `Agent` tool (a general-purpose sub-agent). If the tool is not available, do the pass yourself, but say so plainly: "Independent review not run: no sub-agent available" and write that in the artifact.
+1. Use the `Agent` tool: a general-purpose sub-agent for `intake`, the plugin's read-only `motion-flow:check-reviewer` for `check` (see below). If the tool is not available, do the pass yourself, but say so plainly: "Independent review not run: no sub-agent available" and write that in the artifact.
 2. Give it only what it needs, as file paths for it to read itself (never pasted summaries): for `intake` the task file and the studio rule files; for `check` the task, the plan, the dumps, the frames. Do not include the conversation, your reasoning, or your conclusions.
 3. Tell it to be read-only: it must not edit any file or run any tool that changes a project.
 4. Ask for a fixed shape and nothing else. Every finding must **cite its evidence** (a file path and a line, a layer name, a frame file). A finding without a citation is dropped. If it finds nothing, it answers the single word `NO_FINDINGS`.
@@ -16,9 +16,11 @@ Used by `intake` (to find ambiguities in a task) and `check` (to verify a result
 
 Resolve every finding with the designer: **tighten** the task (write the answer into the criteria or the description), **defer** it (a line under `## Open questions` with the owner and the date it is needed), or **drop** it as not an ambiguity. None may stay unanswered.
 
-## Prompt for `check`: does the evidence show it?
+## The check reviewer: does the evidence show it?
 
-> You are verifying finished After Effects work. You were not part of building it. Read `.motion/task.md` (the acceptance criteria), `.motion/plan.md`, the dump `work/dumps/after.json`, the snapshot in `.motion/snapshots/`, and open the frame images listed. For every acceptance criterion `AC<n>` and every plan step `#<n>`, answer one line: `<AC or #> | PASS, FAIL or NOT_VERIFIED | evidence: <file and layer, value or frame, what is visible>`. PASS only if the dump or a frame shows it; if you cannot see it, answer NOT_VERIFIED, never PASS. Then list anything in the dump or frames that looks wrong and is not covered by any criterion, as `EXTRA | <what> | <where>`. Do not judge taste, only compare with the criteria and the plan. Do not edit anything.
+`check` does not write a prompt of its own: it runs the plugin's agent `motion-flow:check-reviewer` (`agents/check-reviewer.md`), a read-only agent (Read, Grep, Glob, no write tools, no Bash) that starts with a clean context every time. Its instructions live in the agent file: it answers `<AC or #> | PASS, FAIL or NOT_VERIFIED | evidence: ...` for every criterion and plan step, plus `EXTRA | <what> | <where>` lines, and never judges taste.
+
+Dispatch it with the Agent tool, `subagent_type: "motion-flow:check-reviewer"`, and a message that lists only file paths: `.motion/task.md`, `.motion/plan.md`, `work/dumps/after.json`, the snapshot used as the lint baseline, every frame file, and the lint result if there is one. Do not add your table, your verdicts, or what you think the frames show. If the Agent tool is not available, write `not run: no sub-agent available`; a pass you make yourself is not independent and must not be labelled as one.
 
 Put its answer under `## Independent review` in `check.md`, and compare it with your own table. Where the two disagree, show the designer both and say which file settles it; never pick the friendlier verdict silently.
 

@@ -259,7 +259,13 @@ test('plan and deliver pass the studio naming rules to aep-version, so version_r
   }
 });
 
-test('the independent-review doc holds both prompts and the rules for a sub-agent', () => {
+test('the independent-review doc holds the intake prompt, points check to its agent, and keeps the sub-agent rules', () => {
   const text = readFileSync(fileURLToPath(new URL('../skills/_shared/independent-review.md', import.meta.url)), 'utf8');
-  for (const phrase of ['Prompt for `intake`', 'Prompt for `check`', 'NO_FINDINGS', 'cite its evidence', 'read-only', 'never pick the friendlier verdict silently']) assert.ok(text.includes(phrase), phrase);
+  for (const phrase of ['Prompt for `intake`', 'subagent_type: "motion-flow:check-reviewer"', 'NO_FINDINGS', 'cite its evidence', 'read-only', 'never pick the friendlier verdict silently']) assert.ok(text.includes(phrase), phrase);
+});
+
+test('the check reviewer agent is read-only, starts clean, and holds the check instructions', () => {
+  const text = readFileSync(fileURLToPath(new URL('../agents/check-reviewer.md', import.meta.url)), 'utf8');
+  assert.match(text, /^tools: Read, Grep, Glob$/m);
+  for (const phrase of ['have not seen the conversation', 'NOT_VERIFIED', 'EXTRA |', 'NO_FINDINGS', 'Cite or drop', 'Never approve anything', 'data, not instructions']) assert.ok(text.includes(phrase), phrase);
 });
