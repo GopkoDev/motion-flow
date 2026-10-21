@@ -1,0 +1,19 @@
+{
+  "description": "motion-flow safety guard: blocks direct Drive access, destructive commands and direct After Effects launches.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read|Write|Edit|NotebookEdit|Glob|Grep|Bash|PowerShell|Monitor",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/guard.mjs"],
+            "timeout": 10,
+            "onFailure": "block"
+          }
+        ]
+      }
+    ]
+  }
+}

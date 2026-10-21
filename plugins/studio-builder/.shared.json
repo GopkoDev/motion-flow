@@ -1,0 +1,24 @@
+{
+  "note": "Copied from shared/ by scripts/sync-shared.mjs. Edit the file in shared/ and run npm run sync; do not edit it here.",
+  "files": [
+    "bin/ae-dump",
+    "bin/ae-render-frame",
+    "bin/ae-run",
+    "bin/drive-gate",
+    "bin/mf-studio",
+    "hooks/guard.mjs",
+    "hooks/hooks.json",
+    "lib/ae-launcher.mjs",
+    "lib/ae-run.mjs",
+    "lib/ae-tools.mjs",
+    "lib/drive-gate.mjs",
+    "lib/dump-schema.mjs",
+    "lib/jsx-source.mjs",
+    "lib/jsx/dump.jsx",
+    "lib/jsx/helpers.jsx",
+    "lib/jsx/ping.jsx",
+    "lib/jsx/render-frame.jsx",
+    "lib/studios.mjs",
+    "lib/work-paths.mjs"
+  ]
+}

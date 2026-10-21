@@ -1,9 +1,10 @@
 {
-  "name": "motion-flow",
+  "name": "motion-flow-repo",
   "private": true,
   "type": "module",
   "engines": { "node": ">=24" },
   "scripts": {
-    "test": "node --test \"scripts/**/*.test.mjs\" \"lib/**/*.test.mjs\" \"hooks/**/*.test.mjs\" \"bin/**/*.test.mjs\""
+    "sync": "node scripts/sync-shared.mjs",
+    "test": "node scripts/sync-shared.mjs --check && node --test \"scripts/**/*.test.mjs\" \"plugins/*/scripts/**/*.test.mjs\" \"plugins/*/lib/**/*.test.mjs\" \"plugins/*/hooks/**/*.test.mjs\" \"plugins/*/bin/**/*.test.mjs\""
   }
 }

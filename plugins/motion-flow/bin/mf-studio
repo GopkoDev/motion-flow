@@ -1,0 +1,22 @@
+#!/usr/bin/env node
+//   mf-studio list              the studios found in the studios folder
+//   mf-studio dir               the studios folder
+//   mf-studio path [--project <dir>]   where the project's studio rules are (JSON)
+import { listStudios, resolveStudio, studiosDir } from '../lib/studios.mjs';
+
+const args = process.argv.slice(2);
+const at = args.indexOf('--project');
+const project = at === -1 ? process.cwd() : args[at + 1] ?? process.cwd();
+const emit = (value) => process.stdout.write(`${JSON.stringify(value)}\n`);
+
+const command = args[0];
+if (command === 'list') emit({ ok: true, dir: studiosDir(), studios: listStudios(studiosDir()).map((s) => s.name) });
+else if (command === 'dir') emit({ ok: true, dir: studiosDir() });
+else if (command === 'path') {
+  const result = resolveStudio(project);
+  emit(result);
+  process.exitCode = result.ok ? 0 : 1;
+} else {
+  process.stderr.write('Usage: mf-studio list | dir | path [--project <dir>]\n');
+  process.exitCode = 2;
+}

@@ -325,7 +325,7 @@ Tips for a comfortable setup:
 
 ## Studio rules and flows
 
-The rules of a studio are a plain folder, created once from a scaffold shipped in this repo (`templates/studio-rules/`):
+The rules of a studio are a plain folder, created once from a scaffold shipped in this repo (`plugins/motion-flow/templates/studio-rules/`):
 
 1. Create `~/Documents/studios/<slug>` (a short lowercase name such as `acme`), `git init` it if you want to share it, and open Claude Code there.
 2. Run `/motion-flow:init-rules`. It copies the scaffold, then drafts the rules from your reference projects and an interview.
@@ -363,11 +363,24 @@ flowchart LR
 
 ## Development
 
+The repository holds two plugins and one catalog:
+
+```text
+.claude-plugin/marketplace.json   the catalog ("motion"): motion-flow and studio-builder
+plugins/motion-flow/              the pipeline: intake, plan, build, check, deliver
+plugins/studio-builder/           builds a studio's rules and flows from example projects
+shared/                           code both plugins need (After Effects and Drive tools, guard hook)
+scripts/                          repository checks: sync-shared, language, catalog
+```
+
+A plugin is installed on its own, so it cannot read a sibling folder. Code that both need lives once in `shared/` and is **copied** into each plugin (the copies are committed, listed in each plugin's `.shared.json`). Edit the file in `shared/`, then run `npm run sync`; `npm test` fails if a copy differs from its source. Both plugins are released together with the same version.
+
 ```bash
-npm test                              # all unit tests (node:test), no After Effects needed
-node scripts/validate_plugin.mjs      # structural validator for manifests, skills, templates
-claude plugin validate .claude-plugin/plugin.json
-node scripts/check_jsx.mjs [--policy] <folder>   # ES3 / script-policy check for JSX
+npm run sync                          # copy shared/ into the plugins after editing it
+npm test                              # sync check + all unit tests (node:test), no After Effects needed
+node plugins/motion-flow/scripts/validate_plugin.mjs plugins/motion-flow   # structural validator for a plugin
+claude plugin validate plugins/motion-flow/.claude-plugin/plugin.json
+node plugins/motion-flow/scripts/check_jsx.mjs [--policy] <folder>         # ES3 / script-policy check for JSX
 ```
 
 Rules for contributing:

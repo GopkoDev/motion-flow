@@ -35,7 +35,7 @@ test('no Cyrillic text in the plugin files (except marked test data)', () => {
 
 test('the artifact templates use English section headings', () => {
   for (const name of ['task.md', 'plan.md', 'check.md', 'deliver.md', 'overrides.md', 'flow.md']) {
-    const text = readFileSync(join(ROOT, 'templates', name), 'utf8');
+    const text = readFileSync(join(ROOT, 'plugins', 'motion-flow', 'templates', name), 'utf8');
     assert.ok(/^## [A-Z]/m.test(text), name);
     assert.ok(!CYRILLIC.test(text), name);
   }
