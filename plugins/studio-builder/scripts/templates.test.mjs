@@ -90,7 +90,7 @@ test('the readme explains the studios folder, one studio per project, and sharin
 
 test('learn-studio works in the studio folder inside the studios folder, counts the examples in code, and writes English rules', () => {
   const text = readFileSync(fileURLToPath(new URL('../skills/learn-studio/SKILL.md', import.meta.url)), 'utf8');
-  for (const phrase of ['mf-studio dir', 'direct subfolder of the studios folder', 'INDEX.md', 'sb-corpus dump', 'sb-corpus analyze', 'the more the better', 'context_split', 'Write the rule files in **English**']) assert.ok(text.includes(phrase), phrase);
+  for (const phrase of ['mf-studio dir', 'direct subfolder of the studios folder', 'INDEX.md', 'cp -Rn', 'never replaced', 'sb-corpus dump', 'sb-corpus analyze', 'the more the better', 'context_split', 'Write the rule files in **English**']) assert.ok(text.includes(phrase), phrase);
   assert.ok(!text.includes('marketplace.json'));
   assert.ok(!/1-2 finished|two examples/i.test(text), 'no cap on the number of examples');
 });

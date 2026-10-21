@@ -1,6 +1,6 @@
 {
   "name": "studio-builder",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Builds a studio's design system and flows from many example After Effects projects. Hands them to motion-flow, or exports a standalone .claude/ the designer can orchestrate alone.",
   "author": {
     "name": "Dmytro Hopko",
