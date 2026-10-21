@@ -14,6 +14,8 @@ Reference for `intake`, `plan`, `build`, `check`, `deliver` and every flow. Gati
 
 The human decides twice: after `plan` and after `check`. Nowhere else is an approval asked for.
 
+**Auto mode.** `/motion-flow:go auto` skips both questions. The designer opts in once per task with `mf-gate auto on` (a Claude Code confirmation prompt), after which the agent runs `mf-gate approve plan --auto` and `mf-gate approve check --auto`. These record `approved_by: auto` next to the usual fields. The gate still refuses an auto approval (`auto_not_enabled`, or `auto_needs_human` when the plan touches protected items or the check verdict is `ISSUES`), and every `verify`, hash and build-log rule applies as before. `mf-gate status` shows the mode; archiving the task switches it off.
+
 ## The gate command
 
 Every step starts by running the gate and obeys its answer.
@@ -38,6 +40,8 @@ Other commands used by the steps:
 mf-gate hash plan             # prints the sha256 of the plan body (see below)
 mf-gate approve plan          # writes approved: true, approved_at and plan_sha256 into plan.md
 mf-gate approve check         # writes approved: true and approved_at into check.md
+mf-gate approve <plan|check> --auto   # the same, recorded as approved_by: auto; refused unless auto mode is on
+mf-gate auto <on|off|status>  # auto mode: the designer confirms `on`; archive switches it off
 mf-gate status                # one-line state of every artifact
 mf-gate restore [<task id>]   # bring an archived or parked task back into .motion/
 mf-gate verify <task|plan|check>   # structural self-check of an artifact; run before showing it
@@ -64,7 +68,7 @@ If the plan was edited after approval, `mf-gate require build` answers `plan_cha
 ## Approval belongs to a person
 
 - Ask for an approval only with `AskUserQuestion`, showing the plan (or the check result) and clear options such as "Approve" / "Change the plan".
-- Run `mf-gate approve ...` only immediately after the designer answered "Approve" in that same step. Never approve on your own, never because the task "looks simple", never because a flow says so.
+- Run `mf-gate approve ...` (without `--auto`) only immediately after the designer answered "Approve" in that same step. Use `--auto` only in auto mode, which the designer turned on. Never approve on your own, never because the task "looks simple", never because a flow says so.
 - `mf-gate approve` is the only thing that writes `status: approved`, `approved: true`, `approved_at` or `plan_sha256`. The guard hook blocks writing them with the file tools and asks the designer to confirm the `mf-gate approve` command itself, so expect one confirmation prompt after the designer's answer; that prompt is part of the approval, not an obstacle to work around.
 - A flow cannot remove or weaken a gate (see `safety.md`).
 - If the designer asks for changes, make them in the file, show the result, and ask again. Each new approval records the new hash.

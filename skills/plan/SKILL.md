@@ -31,6 +31,7 @@ Before starting, read `${CLAUDE_PLUGIN_ROOT}/skills/_shared/gating.md`, `safety.
 10. **Self-check.** Run `mf-gate verify plan`. Fix what fails and run it again (at most twice). It checks, among other things, that every criterion has a step, every step has a criterion and a frame, and no template text is left. If something still fails, show it to the designer plainly.
 11. **Show and ask.** Print the plan in the chat (the table, the criteria not covered, the risks, the questions). Then ask with `AskUserQuestion`: "Approve" or "Change the plan". Do not ask when `Questions for the designer` still has unanswered questions: ask those first.
     - If the designer asks for changes, edit `plan.md`, show the new version, and ask again.
+    - In auto mode (`mf-gate status` shows `mode: auto`, set by `/motion-flow:go auto`) do not ask: after the self-check passes run `mf-gate approve plan --auto`. If it refuses with `auto_needs_human`, ask the designer as above.
     - If the designer approves, run `mf-gate approve plan`. Claude Code will show one confirmation prompt for this command; tell the designer to approve it, it records their decision. Never run it without the designer's explicit "Approve".
 12. **Hand off** (`handoff.md`): the plan file, the self-check line, "check the table row by row and the criteria it does not cover", next command `/motion-flow:build`.
 
