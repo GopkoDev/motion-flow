@@ -1,0 +1,5 @@
+#!/usr/bin/env node
+//   mf-sheet --out work/frames/sheet.png [--cols 4] [--per-sheet 12] [--cell-width 480] <frame.png> ...
+import { main } from '../lib/contact-sheet.mjs';
+
+process.exitCode = await main(process.argv.slice(2));

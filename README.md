@@ -262,6 +262,7 @@ The skills call these tools for you; you rarely type them. They are on the `PATH
 | `ae-lint` | Runs the studio's declarative checks on a dump (fps, size, names, missing media/fonts, default layer names, protected items). | `check` |
 | `aep-version` | Computes the next version name (`spring_v07.aep` → `spring_v08.aep`) without overwriting. | `build`, `deliver` |
 | `mf-studio` | Finds studio rules in the studios folder: `list`, `dir`, `path` (where the project's studio rules are). | `go`, `init-project`, every step that reads rules |
+| `mf-sheet` | Puts the check frames into one numbered contact sheet with ffmpeg (up to 12 per sheet), so `check` reads one image instead of 12-20. | `check` |
 | `mf-sum` | SHA-256 checksums for delivered files. | `deliver` |
 | `mf-flow` | `check`, `bump`, `pack` for flows (validation, version bump with changelog, deterministic zip). | `new-flow`, `refine-flow`, `publish-flow` |
 | `mf-whatsnew` | Reads a rules changelog and what you already saw. | `whats-new` |
