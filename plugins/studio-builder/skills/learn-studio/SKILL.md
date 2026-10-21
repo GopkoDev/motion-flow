@@ -14,7 +14,7 @@ Before starting, read `${CLAUDE_PLUGIN_ROOT}/skills/_shared/safety.md`, `socrati
 
 1. **Prepare the studio folder.**
    - The current folder must be the studio's folder, a direct subfolder of the studios folder (`mf-studio dir`). If it is not, tell the designer: create `<studios folder>/<studio slug>` (a short lowercase name with letters, digits and hyphens, for example `acme`), open Claude Code there and run this command again; then stop. The slug is the studio's name for every project, so it must be unique in that folder.
-   - If `INDEX.md` is missing, ask the studio's display name, then copy the scaffold: `cp -R "${CLAUDE_PLUGIN_ROOT}/templates/studio-rules/." .` and replace `<studio name>` in `INDEX.md` and `README.md`.
+   - If `INDEX.md` is missing, ask the studio's display name, then copy the scaffold **without overwriting anything**: `cp -Rn "${CLAUDE_PLUGIN_ROOT}/templates/studio-rules/." .` (`-n` keeps every file that already exists, so rules moved here from an older studio are never replaced). Replace `<studio name>` only in the `INDEX.md` and `README.md` that this copy created.
    - If rule files already exist with content, ask whether to refine them with the new examples or start over. Never overwrite a file with content without the designer's explicit yes.
    - If `.motion/drive.json` is missing, run `sb-init --no-drive --no-studio` (fallback: `node "${CLAUDE_PLUGIN_ROOT}/bin/sb-init" ...`): it creates `work/`, `.motion/` and the safety settings, and asks nothing. Drive is chosen in step 2.
 2. **Ask for the examples.** With `AskUserQuestion`, in plain words:
