@@ -262,17 +262,31 @@ var mf = (function () {
     }
 
     /**
-     * Makes sure the wanted project is the open one. It never closes another project: if a different one is
-     * open (it could hold unsaved work), it stops with a clear error instead.
+     * Makes sure the wanted project is the open one. A different open project is closed WITHOUT saving only when
+     * it is a saved file and After Effects says it has no unsaved changes (app.project.dirty === false): then
+     * nothing can be lost. An untitled project, one with unsaved changes, or one whose state cannot be read
+     * stops the run with a clear error. (Closing a dirty project without DO_NOT_SAVE_CHANGES would raise a
+     * "Save changes?" dialog that blocks scripting, so it is never attempted.)
      */
     function ensureProject(path) {
         var file = new File(path);
+        var current = app.project;
+        var why;
         if (!file.exists) { throw new Error("Project file not found: " + path); }
-        if (app.project && app.project.file && sameFile(app.project.file.fsName, file.fsName)) { return app.project; }
-        if (app.project && (app.project.file || app.project.numItems > 0)) {
-            throw new Error("Another project is open in After Effects"
-                + (app.project.file ? " (" + app.project.file.fsName + ")" : " (unsaved)")
-                + ". Close it first; motion-flow never closes a project on its own.");
+        if (current && current.file && sameFile(current.file.fsName, file.fsName)) { return current; }
+        if (current && (current.file || current.numItems > 0)) {
+            if (!current.file) {
+                why = "(unsaved) has never been saved";
+            } else if (current.dirty === true) {
+                why = "(" + current.file.fsName + ") has unsaved changes";
+            } else if (current.dirty !== false) {
+                why = "(" + current.file.fsName + ") and its unsaved state cannot be read";
+            }
+            if (why) {
+                throw new Error("Another project is open in After Effects " + why
+                    + ". Save and close it yourself; motion-flow switches away only from a saved project with no unsaved changes.");
+            }
+            current.close(CloseOptions.DO_NOT_SAVE_CHANGES);
         }
         app.open(file);
         return app.project;

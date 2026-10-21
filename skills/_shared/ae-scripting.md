@@ -30,7 +30,7 @@ Helpers available on `mf`: `findComp(name)`, `findLayer(comp, name)`, `findLayer
 4. **Result goes to a file, not the screen.** Never rely on `$.writeln` or the UI. Return a plain object (numbers, strings, booleans, arrays, plain objects); `mf.toJSON` serializes it.
 5. **No dialogs.** Never use `alert`, `confirm` or `prompt`, never open a file chooser. A dialog freezes the run until the timeout. `mf.runIpc` also suppresses dialogs while it runs.
 6. **Keep a run short.** After Effects is blocked while a script runs. Split long work into several steps (several scripts, one plan step each). A run that takes more than about a minute should be split.
-7. **Work only on the project copy in `work/`.** The script never opens, saves or touches any other file. Never close a project: `mf.runIpc` refuses to switch if a different project is open (it could hold unsaved work).
+7. **Work only on the project copy in `work/`.** The script never opens, saves or touches any other file. Never close a project in a script (the policy rejects it). `mf.runIpc` switches projects by itself: it closes a different open project without saving only if that project is a saved file with no unsaved changes (`app.project.dirty === false`), and otherwise refuses, because it could hold unsaved work.
 8. **Do not delete the designer's content** unless the approved plan says so explicitly, and then only the named items.
 9. **Check the script** before running: `node "${CLAUDE_PLUGIN_ROOT}/scripts/check_jsx.mjs" --policy jsx/` must pass (ES3 syntax and the safety policy below). `ae-run` refuses a script that breaks the policy.
 

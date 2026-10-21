@@ -355,7 +355,7 @@ flowchart LR
 | A step answers "refused: plan_not_approved" or "plan_changed_after_approval" | That is the gate working. Approve the plan again, or run `plan` to change it. |
 | `build` refuses with `build_failed` / `check` refuses | The log has an error. Read `.motion/build.log.jsonl`, fix the cause, rebuild. |
 | "No Drive folders are set up on this computer" | Fine without Drive. Otherwise run `/motion-flow:setup`. |
-| "Another project is open in After Effects" | Save and close it. The tool never closes your work for you. |
+| "Another project is open in After Effects" | That project has unsaved changes (or was never saved). Save and close it. The tools switch projects by themselves only when the open one is saved and unchanged, so your work is never lost. |
 | `ae-run --ping` times out | Check that After Effects is installed, that the script-access setting is on, and that no modal dialog is open in AE. |
 | A permission prompt appears for `rm`, `git push`, a Drive path | Intended. Read it and approve only if you expect it. A direct Drive path or a launch of AE outside the tools is blocked outright. |
 | `project settings.json not found` in `doctor` | Run `/motion-flow:init-project` in the project folder. |
