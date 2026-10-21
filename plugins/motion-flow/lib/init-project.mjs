@@ -93,7 +93,7 @@ export function planInit({ projectDir, home = homedir(), pluginRoot = PLUGIN_ROO
   const studiosPath = studiosDir(home);
   if (typeof studio === 'string') {
     const found = listStudios(studiosPath).map((entry) => entry.name);
-    if (!found.includes(studio)) throw new Error(`Unknown studio "${studio}". Studios in ${studiosPath}: ${found.join(', ') || 'none yet (create one with /motion-flow:init-rules)'}.`);
+    if (!found.includes(studio)) throw new Error(`Unknown studio "${studio}". Studios in ${studiosPath}: ${found.join(', ') || 'none yet (create one with /studio-builder:learn-studio)'}.`);
   }
   const folders = driveFolders(config);
   let projectReal = project;

@@ -7,42 +7,13 @@ import { homedir, platform, totalmem } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadConfig, loadProjectDrive, GateError } from './drive-gate.mjs';
+import { parseDeps } from './deps.mjs';
 import { resolveStudio } from './studios.mjs';
 import { parseFrontmatter } from '../scripts/validate_plugin.mjs';
 
 const PLUGIN_ROOT = fileURLToPath(new URL('..', import.meta.url));
 
-const DETECTORS = ['after-effects'];
-
-/** Validates the shape of deps.json and returns the entries. Throws Error with a readable message. */
-export function parseDeps(text) {
-  let data;
-  try {
-    data = JSON.parse(text);
-  } catch (e) {
-    throw new Error(`deps.json is not valid JSON: ${e.message}`);
-  }
-  if (!Array.isArray(data)) throw new Error('deps.json must be an array of dependency objects');
-  const seen = new Set();
-  data.forEach((dep, i) => {
-    const at = `deps.json[${i}]`;
-    if (!dep || typeof dep !== 'object') throw new Error(`${at} must be an object`);
-    if (typeof dep.name !== 'string' || !dep.name) throw new Error(`${at}.name is required`);
-    if (seen.has(dep.name)) throw new Error(`${at}: duplicate name "${dep.name}"`);
-    seen.add(dep.name);
-    if (dep.check !== null && typeof dep.check !== 'string') throw new Error(`${at}.check must be a command string or null`);
-    if (dep.check !== null && typeof dep.version_regex === 'string') {
-      try { new RegExp(dep.version_regex); } catch (e) { throw new Error(`${at}.version_regex is not a valid regex: ${e.message}`); }
-    }
-    if (dep.min_version != null && !/^\d+(\.\d+)*$/.test(dep.min_version)) throw new Error(`${at}.min_version must look like 1.2.3`);
-    if (dep.detect !== undefined && !DETECTORS.includes(dep.detect)) throw new Error(`${at}.detect must be one of: ${DETECTORS.join(', ')}`);
-    if (!dep.install || typeof dep.install.macos !== 'string' || typeof dep.install.windows !== 'string') {
-      throw new Error(`${at}.install needs "macos" and "windows" strings`);
-    }
-    if (!Array.isArray(dep.required_by)) throw new Error(`${at}.required_by must be an array`);
-  });
-  return data;
-}
+export { parseDeps };
 
 /** Compares dotted numeric versions: returns -1, 0 or 1. */
 export function compareVersions(a, b) {
@@ -202,7 +173,14 @@ export async function checkPluginVersions(run, pluginRoot = PLUGIN_ROOT) {
   for (const name of ['motion-flow']) details.push(found[name] ? `${name} installed: v${found[name]}` : `${name} is not installed`);
   const mismatch = found['motion-flow'] && found['motion-flow'] !== manifest.version;
   if (mismatch) details.push(`installed motion-flow v${found['motion-flow']} differs from these files (v${manifest.version}); run /reload-plugins or update`);
-  return { name: 'plugin versions', status: !found['motion-flow'] || mismatch ? 'problem' : 'ok', details };
+  // studio-builder is optional (it builds the studio rules and flows), but the two are released together: the tools they share must match.
+  let builderMismatch = false;
+  if (!found['studio-builder']) details.push('studio-builder is not installed (optional: /plugin install studio-builder@motion builds studio rules and flows from example projects)');
+  else if (found['studio-builder'] !== found['motion-flow'] && found['motion-flow']) {
+    builderMismatch = true;
+    details.push(`studio-builder v${found['studio-builder']} and motion-flow v${found['motion-flow']} differ; they share tools, so update both together`);
+  } else details.push(`studio-builder installed: v${found['studio-builder']}`);
+  return { name: 'plugin versions', status: !found['motion-flow'] || mismatch || builderMismatch ? 'problem' : 'ok', details };
 }
 
 // ---------- After Effects ----------

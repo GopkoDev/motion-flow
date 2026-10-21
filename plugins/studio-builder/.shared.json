@@ -6,19 +6,26 @@
     "bin/ae-run",
     "bin/drive-gate",
     "bin/mf-studio",
+    "deps.json",
     "hooks/guard.mjs",
     "hooks/hooks.json",
     "lib/ae-launcher.mjs",
     "lib/ae-run.mjs",
     "lib/ae-tools.mjs",
+    "lib/artifact.mjs",
+    "lib/deps.mjs",
     "lib/drive-gate.mjs",
     "lib/dump-schema.mjs",
+    "lib/init-project.mjs",
     "lib/jsx-source.mjs",
     "lib/jsx/dump.jsx",
     "lib/jsx/helpers.jsx",
     "lib/jsx/ping.jsx",
     "lib/jsx/render-frame.jsx",
     "lib/studios.mjs",
-    "lib/work-paths.mjs"
+    "lib/work-paths.mjs",
+    "skills/_shared/drive-access.md",
+    "skills/_shared/socratic-loop.md",
+    "skills/_shared/studio-rules.md"
   ]
 }

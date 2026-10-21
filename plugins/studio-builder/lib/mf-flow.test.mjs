@@ -184,6 +184,8 @@ test('machine paths, Drive paths and e-mail addresses are refused', () => {
 test('examples: two examples, or an explanation why only one; no media or large files', () => {
   assert.deepEqual(failedNames(check({ 'example/README.md': '# Examples\n\n## Example 1\n\nOne case.\n' })), ['examples']);
   assert.deepEqual(failedNames(check({ 'example/README.md': '# Examples\n\n## Example 1\n\nOne case.\n\n## Why only one example\n\nThe studio did this task only once so far.\n' })), []);
+  assert.deepEqual(failedNames(check({ 'example/README.md': '# Examples\n\n## Evidence\n\n18 examples in 4 groups, 9 version pairs. The change repeated in 8 of 9 pairs.\n' })), [], 'many examples are summarized in an Evidence section');
+  assert.deepEqual(failedNames(check({ 'example/README.md': '# Examples\n\n## Evidence\n\n1 example seen.\n' })), ['examples'], 'an Evidence section must count at least two examples');
   assert.deepEqual(failedNames(check({ 'example/project.aep': 'binary' })), ['examples']);
   assert.deepEqual(failedNames(check({ 'example/clip.mp4': 'binary' })), ['examples']);
   assert.deepEqual(failedNames(check({ 'example/big.json': 'x'.repeat(250 * 1024) })), ['examples']);

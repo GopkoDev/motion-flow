@@ -293,7 +293,7 @@ test('a new project lets the plugin tools and file edits run without a prompt', 
   applyPlan(planInit({ projectDir: project, home }));
   const { permissions } = settingsOf();
   assert.equal(permissions.defaultMode, 'acceptEdits');
-  for (const tool of ['mf-gate', 'ae-run', 'ae-dump', 'ae-render-frame', 'ae-lint', 'aep-version', 'mf-sum', 'mf-flow', 'mf-studio', 'mf-sheet']) {
+  for (const tool of ['mf-gate', 'ae-run', 'ae-dump', 'ae-render-frame', 'ae-lint', 'aep-version', 'mf-sum', 'mf-studio', 'mf-sheet']) {
     assert.ok(permissions.allow.includes(`Bash(${tool} *)`), tool);
   }
   assert.ok(permissions.ask.includes('Bash(git push *)'), 'dangerous git still asks');

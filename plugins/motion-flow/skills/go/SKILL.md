@@ -31,7 +31,7 @@ Auto mode is the designer's explicit choice, made once for the project: the answ
 1. **Is the project set up?** It is when `.motion/` and `.claude/settings.json` exist.
    - **Not set up (first run).** Ask all three questions in one `AskUserQuestion` call, in Ukrainian, as the designer sees them together:
      1. Google Drive: no Drive (default), or which of the computer's Drive folders this project may read (`mf-setup --show`; if the computer has none, only offer "no Drive" and mention `/motion-flow:setup` for later).
-     2. The studio: none (default), or one of the studios found by `mf-studio list` (folders in the studios folder). If none are found, offer only "none" and say that `/motion-flow:init-rules` creates a studio.
+     2. The studio: none (default), or one of the studios found by `mf-studio list` (folders in the studios folder). If none are found, offer only "none" and say that `/studio-builder:learn-studio` creates a studio.
      3. Mode: **ask** (default; the agent asks and waits for your approval of the plan and the result) or **auto** (no questions and no approvals; the agent approves its own plan and result).
 
      Then follow `${CLAUDE_PLUGIN_ROOT}/skills/init-project/SKILL.md` from its preview step with these answers (`mf-init --dry-run`, then `mf-init`), and tell the designer in a short block what was created. If `mf-init` refuses (the folder is inside Drive), give its message and stop. For auto, run `mf-gate auto on`; tell the designer first that its confirmation prompt is what switches auto mode on. If they decline, the project stays in ask mode and you say so.

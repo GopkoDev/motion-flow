@@ -54,6 +54,7 @@ export function discoverProjects(examples, cwd = process.cwd()) {
       file: basename(file),
       path: relative(realish(resolve(cwd)), file).split(sep).join('/'),
       group: parts.length > 1 ? parts[0] : '',
+      folder: parts.slice(0, -1).join('/'),
       mtimeMs: Math.round(statSync(file).mtimeMs),
     };
   });

@@ -113,6 +113,6 @@ test('CLI: lists what is new, marks it seen, and fails clearly', () => {
 });
 
 test('the scaffold changelog of the studio rules is readable by whats-new', () => {
-  const text = readFileSync(join(REPO, 'templates', 'studio-rules', 'CHANGELOG.md'), 'utf8');
+  const text = readFileSync(join(REPO, '..', 'studio-builder', 'templates', 'studio-rules', 'CHANGELOG.md'), 'utf8');
   assert.deepEqual(parseChangelog(text).map((r) => r.version), ['0.1.0']);
 });

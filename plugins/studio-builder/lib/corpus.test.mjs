@@ -21,7 +21,7 @@ function dump({ comps = [{ name: 'Main', layers: [{ name: 'Logo' }] }], fonts = 
     })),
   };
 }
-const facts = (d, meta) => extractFacts(d, { id: meta.id, file: meta.file ?? `${meta.id}.aep`, group: meta.group ?? '', mtimeMs: meta.mtimeMs ?? 1000 });
+const facts = (d, meta) => extractFacts(d, { id: meta.id, file: meta.file ?? `${meta.id}.aep`, group: meta.group ?? '', folder: meta.folder, mtimeMs: meta.mtimeMs ?? 1000 });
 
 /** n rows whose single feature "frame rate" is given by `fpsList`, with ids p1..pn. */
 function fpsRows(fpsList, extra = (i) => ({})) {
@@ -133,6 +133,16 @@ test('versions of one project are paired in order, inside a group', () => {
     ['n1', 'spring_v01.aep', 'nova'], ['x', 'single.aep', 'acme'], ['n2', 'spring_v02.aep', 'nova'],
   ].map(([id, file, group]) => facts(dump(), { id, file, group }));
   assert.deepEqual(findPairs(rows), [{ before: 'a0', after: 'a1' }, { before: 'a1', after: 'a3' }, { before: 'n1', after: 'n2' }]);
+});
+
+test('a folder with one before and one after project is a pair, and its projects are not paired by version again', () => {
+  const rows = [
+    ['b1', 'before.aep', 'acme/job1'], ['a1', 'after.aep', 'acme/job1'],
+    ['b2', 'Input.aep', 'acme/job2'], ['a2', 'Output.aep', 'acme/job2'],
+    ['m1', 'before.aep', 'acme/job3'], ['m2', 'before_v2.aep', 'acme/job3'], ['m3', 'after.aep', 'acme/job3'],
+    ['v1', 'spring_v01.aep', 'acme/other'], ['v2', 'spring_v02.aep', 'acme/other'],
+  ].map(([id, file, folder]) => facts(dump(), { id, file, folder, group: 'acme' }));
+  assert.deepEqual(findPairs(rows), [{ before: 'b1', after: 'a1' }, { before: 'b2', after: 'a2' }, { before: 'v1', after: 'v2' }], 'job3 has two "before" projects: not a clear pair');
 });
 
 test('diffDumps names what changed in generic terms, and typicalChanges counts what repeats', () => {

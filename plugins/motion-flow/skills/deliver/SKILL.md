@@ -27,7 +27,7 @@ Before starting, read `${CLAUDE_PLUGIN_ROOT}/skills/_shared/gating.md`, `safety.
 8. **Write `.motion/deliver.md`** from `${CLAUDE_PLUGIN_ROOT}/templates/deliver.md`: `task_id`, `status: delivered`, `delivered_at` (now, ISO 8601), the file table (name, size, sha256), and `## Where to put them`: for each file, the Drive folder from the delivery or drive rules (an alias and a relative path, never a machine path). Add open items.
 9. **Changelog.** Append one line to `.motion/changelog.md` (create it if it does not exist): date, task id, what was delivered.
 10. **Local commit, only if enabled.** If `.motion/state.json` has `"commit_artifacts": true` and the project is a git repository, commit the text artifacts of this task (`.motion/task.md`, `plan.md`, `check.md`, `deliver.md`, `changelog.md`) with a message naming the task id. Never add `work/`, `.aep` files, media or renders. Never push.
-11. **Hand off** (`handoff.md`): the files in `work/out/`, the Drive folders to copy them to (by the designer, by hand), `.motion/deliver.md`. Next command: `/motion-flow:intake` for the next task (it archives this one first).
+11. **Hand off** (`handoff.md`): the files in `work/out/`, the Drive folders to copy them to (by the designer, by hand), `.motion/deliver.md`. Next command: `/motion-flow:intake` for the next task (it archives this one first). If the designer says they had to fix something by hand afterwards, mention `/studio-builder:refine-flow` (the studio-builder plugin turns the correction into a better flow).
 
 ## Rules
 

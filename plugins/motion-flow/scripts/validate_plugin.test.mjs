@@ -228,7 +228,9 @@ test('intake and check must use an independent pass', () => {
 });
 
 const FLOW_SKILL_TEXT = {
-  'new-flow': 'mf-flow check. mf-gate archive --park. mf-gate restore. Ask to save every open After Effects project.',
+  'new-flow': 'mf-flow check. sb-corpus dump. sb-corpus analyze. Never claim a step is supported by examples without the count from `sb-corpus`.',
+  'learn-studio': 'sb-corpus dump. sb-corpus analyze. Never set `status: confirmed`. Never write a rule from fewer than three projects.',
+  'export-claude': 'sb-export. Never overwrite a file the designer edited. Never write `.claude/settings.json`.',
   'refine-flow': 'mf-flow bump. mf-flow check. Never edit the studio rules folder from a project.',
   'publish-flow': 'mf-flow check. mf-flow pack. Never write, copy or move anything on Drive. Never mark a flow `reviewed` or `approved`.',
   'whats-new': 'mf-whatsnew. last_seen_rules_version.',

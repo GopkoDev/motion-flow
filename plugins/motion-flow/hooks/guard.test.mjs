@@ -274,7 +274,15 @@ test('shell writes to plan.md or check.md ask; reads do not', () => {
 
 test('mf-init --studio and --no-studio are allowed: the studio is a name, not a plugin', () => {
   writeFileSync(join(project, '.claude', 'settings.json'), '{}');
-  expectAll(['mf-init --studio acme', 'mf-init --no-studio', 'node bin/mf-init --studio acme'], 'allow');
+  expectAll(['mf-init --studio acme', 'mf-init --no-studio', 'node bin/mf-init --studio acme', 'sb-init --studio acme'], 'allow');
+});
+
+test('sb-init --drive asks like mf-init --drive when a Drive choice already exists', () => {
+  mkdirSync(join(project, '.motion'), { recursive: true });
+  expectAll(['sb-init --drive assets'], 'allow');
+  writeFileSync(join(project, '.motion', 'drive.json'), '{"aliases":[]}');
+  expectAll(['sb-init --drive assets', 'node bin/sb-init --drive assets'], 'ask');
+  expectAll(['sb-init --no-drive --dry-run', 'sb-init --studio acme'], 'allow');
 });
 
 // ---------- the build log is written only by ae-run ----------

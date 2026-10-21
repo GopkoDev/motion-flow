@@ -344,3 +344,16 @@ test('doctor lists the studio rules check in a full report', async () => {
   const report = await runDoctor({ home: tmp(), projectDir: tmp(), run: async () => ({ ok: true, output: 'v99 git version 9' }), detectors: { 'after-effects': () => ({ ok: true, version: '2025' }) } });
   assert.ok(report.checks.some((c) => c.name === 'studio rules'));
 });
+
+test('plugin versions: studio-builder is optional, but must match motion-flow when installed', async () => {
+  const { checkPluginVersions } = await import('./doctor.mjs');
+  const manifest = JSON.parse(readFileSync(join(REPO, '.claude-plugin', 'plugin.json'), 'utf8'));
+  const list = (builder) => async () => ({ ok: true, output: `  motion-flow@motion\n    Version: ${manifest.version}\n${builder ? `  studio-builder@motion\n    Version: ${builder}\n` : ''}` });
+  const without = await checkPluginVersions(list(null));
+  assert.equal(without.status, 'ok');
+  assert.ok(without.details.some((d) => /studio-builder is not installed \(optional/.test(d)));
+  assert.equal((await checkPluginVersions(list(manifest.version))).status, 'ok');
+  const mismatch = await checkPluginVersions(list('0.0.1'));
+  assert.equal(mismatch.status, 'problem');
+  assert.ok(mismatch.details.some((d) => /update both together/.test(d)));
+});

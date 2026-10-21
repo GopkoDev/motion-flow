@@ -1,13 +1,13 @@
 # <studio name> studio rules
 
-The private rules and approved flows of the studio, read by the `motion-flow` plugin. This is a plain folder: no plugin, no marketplace, nothing to install.
+The private rules and approved flows of the studio, read by the `motion-flow` plugin and exported by `studio-builder`. This is a plain folder: no plugin, no marketplace, nothing to install.
 
 - `INDEX.md`: the index motion-flow steps read (which rule file is read by which step).
 - `rules/`: naming, motion system, protected elements, delivery, Drive, the project template, and `ae-lint` checks. Every file is `status: draft` until a person has read it and confirmed it.
 - `flows/`: approved flows, one folder each.
 - `CHANGELOG.md`: what changed, one `## x.y.z` heading per release, flows named as flow `<name>`: ... (read by `/motion-flow:whats-new`).
 
-Fill the rules in with `/motion-flow:init-rules`, which interviews the designers and reads reference projects. A rule becomes `confirmed` only when a person has read it, changed `status` to `confirmed`, filled in `confirmed_by` and `confirmed_at`, and committed it.
+Fill the rules in with `/studio-builder:learn-studio`, which interviews the designers and reads reference projects. A rule becomes `confirmed` only when a person has read it, changed `status` to `confirmed`, filled in `confirmed_by` and `confirmed_at`, and committed it.
 
 ## Using these rules
 

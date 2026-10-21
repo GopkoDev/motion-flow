@@ -66,8 +66,6 @@ const TEMPLATES = {
   'check.md': { keys: ['task_id', 'verdict', 'approved', 'approved_at'], headings: ['## Comparison with the plan', '## Acceptance criteria', '## Lint', '## Frames', '## Independent review', '## Open questions'] },
   'deliver.md': { keys: ['task_id', 'status', 'delivered_at'], headings: ['## Files', '## Where to put them', '## Open questions'] },
   'overrides.md': { keys: ['project'], headings: ['## Exceptions to the studio rules'] },
-  'flow.md': { keys: ['name', 'version', 'owner', 'status', 'needs'], headings: ['## What this flow is for', '## What starts it (3 example phrases)', '## Inputs', '## Steps in order', '## Where the designer decides', '## What must not be touched', '## How to tell it is done', '## Examples (links to example/)'] },
-  'flow-SKILL.md': { keys: ['name', 'description', 'model'], headings: ['## Safety'] },
 };
 
 test('every artifact template has valid frontmatter with the keys of spec section 8 and its sections', () => {
@@ -87,15 +85,9 @@ test('plan and check templates start unapproved and with no hash', () => {
   assert.deepEqual([check.approved, check.approved_at], ['false', 'null']);
 });
 
-test('the flow skill template promises not to weaken safety.md and uses model: inherit', () => {
-  const text = read('flow-SKILL.md');
-  assert.equal(parseFrontmatter(text).model, 'inherit');
-  assert.match(text, /does not change or weaken `_shared\/safety\.md`/);
-});
-
 test('templates live next to the config templates and nothing else unexpected is in the folder', () => {
   const files = readdirSync(fileURLToPath(new URL('../templates/', import.meta.url))).sort();
-  assert.deepEqual(files, ['CLAUDE.project.md', 'check.md', 'deliver.md', 'flow-SKILL.md', 'flow.md', 'gitignore.project', 'overrides.md', 'plan.md', 'roots.example.json', 'settings.project.json', 'studio-rules', 'task.md']);
+  assert.deepEqual(files, ['CLAUDE.project.md', 'check.md', 'deliver.md', 'gitignore.project', 'overrides.md', 'plan.md', 'roots.example.json', 'settings.project.json', 'task.md']);
 });
 
 // ---------- shared reference docs ----------
@@ -120,77 +112,6 @@ test('gating.md describes the five gates, the hash rule and human-only approval'
   const text = readFileSync(fileURLToPath(new URL('../skills/_shared/gating.md', import.meta.url)), 'utf8');
   for (const phrase of ['mf-gate require', 'plan_sha256', 'AskUserQuestion', 'plan_changed_after_approval', 'twice']) assert.ok(text.includes(phrase), phrase);
   for (const step of ['intake', 'plan', 'build', 'check', 'deliver']) assert.ok(text.includes(`| ${step} |`), step);
-});
-
-// ---------- the studio-rules scaffold (T4.1) ----------
-
-import { existsSync } from 'node:fs';
-import { loadChecks } from '../lib/ae-lint.mjs';
-import { compilePattern, nextVersionName, patternFromNamingFile } from '../lib/aep-version.mjs';
-
-const SCAFFOLD = fileURLToPath(new URL('../templates/studio-rules/', import.meta.url));
-const scaffold = (name) => readFileSync(join(SCAFFOLD, name), 'utf8');
-const RULE_FILES = ['naming.md', 'motion-system.md', 'protected.md', 'delivery.md', 'drive.md'];
-
-test('the scaffold is a plain folder: no plugin manifest, no catalog, no skill', () => {
-  for (const path of ['.claude-plugin', 'skills']) assert.ok(!existsSync(join(SCAFFOLD, path)), `${path} must not exist`);
-  assert.ok(existsSync(join(SCAFFOLD, 'INDEX.md')));
-});
-
-test('every rule file starts as a draft with the confirmation fields', () => {
-  for (const name of RULE_FILES) {
-    const front = parseFrontmatter(scaffold(`rules/${name}`));
-    assert.ok(front, name);
-    assert.equal(front.status, 'draft', name);
-    for (const key of ['confirmed_by', 'confirmed_at']) assert.ok(key in front, `${name}: ${key}`);
-  }
-});
-
-test('the index lists every rule file, every folder, and the steps that read them (spec section 10)', () => {
-  const text = scaffold('INDEX.md');
-  for (const name of RULE_FILES) assert.ok(text.includes(`rules/${name}`), name);
-  for (const item of ['rules/project-template/', 'rules/checks/', 'flows/', 'CHANGELOG.md']) assert.ok(text.includes(item), item);
-  for (const row of [/naming\.md.*\| plan, build, check, deliver \|/, /project-template.*\| intake, build \|/, /motion-system.*\| plan, build \|/, /protected\.md.*\| plan, build, check \|/, /delivery\.md.*\| plan, deliver \|/, /drive\.md.*\| deliver, publish-flow \|/, /checks\/.*\| check \|/, /flows\/.*\| intake \|/]) assert.match(text, row);
-  assert.match(text, /status: draft/);
-  assert.match(text, /Never turn a draft into `confirmed` yourself/);
-  assert.ok(text.includes('`rules/` folder next to this file'));
-  assert.ok(!text.includes('CLAUDE_PLUGIN_ROOT'));
-});
-
-test('the version pattern in naming.md is accepted by aep-version and finds the version in a typical name', () => {
-  const pattern = patternFromNamingFile(join(SCAFFOLD, 'rules', 'naming.md'));
-  assert.ok(pattern);
-  compilePattern(pattern);
-  assert.equal(nextVersionName('spring_v07.aep', { pattern }).name, 'spring_v08.aep');
-});
-
-test('the example checks load in ae-lint, and the live checks folder holds no active check yet', () => {
-  const examples = loadChecks(join(SCAFFOLD, 'rules', 'checks', '_examples'));
-  assert.deepEqual(examples.map((c) => c.id).sort(), ['brand-fonts', 'comp-names', 'fps-25', 'no-default-names', 'no-missing-media', 'protected-brand']);
-  assert.deepEqual(loadChecks(join(SCAFFOLD, 'rules', 'checks')), [], 'a fresh studio has no active checks until the designers confirm them');
-  assert.ok(existsSync(join(SCAFFOLD, 'rules', 'checks', 'README.md')));
-});
-
-test('the scaffold keeps tool folders out of the studio repository', () => {
-  const lines = scaffold('.gitignore').split('\n');
-  for (const entry of ['work/', '.motion/', '.claude/', 'CLAUDE.md']) assert.ok(lines.includes(entry), entry);
-});
-
-test('the scaffold has the changelog, the readme, the flows folder and the project template notes', () => {
-  for (const file of ['CHANGELOG.md', 'README.md', 'flows/.gitkeep', 'rules/project-template/README.md']) assert.ok(existsSync(join(SCAFFOLD, file)), file);
-  assert.match(scaffold('README.md'), /init-rules/);
-});
-
-test('the readme explains the studios folder, one studio per project, and sharing with git', () => {
-  const text = scaffold('README.md');
-  for (const phrase of ['~/Documents/studios/<studio>/', 'mf-studio dir', '.motion/studio.json', 'freelancer', 'git pull', 'outside Google Drive']) assert.ok(text.includes(phrase), phrase);
-  for (const phrase of ['/plugin marketplace', 'claude plugin install']) assert.ok(!text.includes(phrase), `no ${phrase}`);
-});
-
-test('init-rules works in the studio folder inside the studios folder and writes English rules', () => {
-  const text = readFileSync(fileURLToPath(new URL('../skills/init-rules/SKILL.md', import.meta.url)), 'utf8');
-  for (const phrase of ['mf-studio dir', 'direct subfolder of the studios folder', 'INDEX.md', 'no plugin manifest and no marketplace', 'Write the rule files in **English**']) assert.ok(text.includes(phrase), phrase);
-  assert.ok(!text.includes('marketplace.json'));
 });
 
 test('init-project offers the studios found in the studios folder and needs no install', () => {

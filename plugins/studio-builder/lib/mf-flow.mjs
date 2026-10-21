@@ -9,9 +9,9 @@ import { homedir } from 'node:os';
 import { basename, extname, join, relative, resolve, sep } from 'node:path';
 import { deflateRawSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
-import { parseArtifact, section, setFrontmatter } from './mf-gate.mjs';
+import { parseArtifact, section, setFrontmatter } from './artifact.mjs';
 import { loadConfig, GateError } from './drive-gate.mjs';
-import { parseDeps } from './doctor.mjs';
+import { parseDeps } from './deps.mjs';
 import { PathError, safeOutputPath } from './work-paths.mjs';
 
 const PLUGIN_ROOT = fileURLToPath(new URL('..', import.meta.url));
@@ -112,6 +112,9 @@ export function checkFlow(folder, { pluginRoot = PLUGIN_ROOT } = {}) {
   }
   const exampleSections = (exampleText.match(/^## Example \d+/gm) ?? []).length;
   const whyOne = (section(exampleText.replace(/\r\n?/g, '\n'), 'Why only one example') ?? '').length >= 10;
+  // Many examples are summarized, not listed one by one: "## Evidence" says how many were seen ("18 examples, 9 version pairs").
+  const evidenceText = section(exampleText.replace(/\r\n?/g, '\n'), 'Evidence') ?? '';
+  const evidenceExamples = Math.max(0, ...[...evidenceText.matchAll(/(\d+)\s+(?:examples?|projects?)/gi)].map((m) => Number(m[1])));
   const exampleFiles = textFilesIn(join(dir, 'example'));
   const badExampleFiles = exampleFiles.filter((f) => !EXAMPLE_EXTENSIONS.has(extname(f).toLowerCase()));
   const exampleBytes = exampleFiles.reduce((sum, f) => sum + statSync(f).size, 0);
@@ -126,7 +129,7 @@ export function checkFlow(folder, { pluginRoot = PLUGIN_ROOT } = {}) {
     { name: 'safety_sentence', ok: skillText.includes(SAFETY_SENTENCE), detail: `SKILL.md must say that the flow ${SAFETY_SENTENCE}` },
     { name: 'no_unsafe_instructions', ok: unsafe.length === 0, detail: unsafe.slice(0, 5).join('; ') },
     { name: 'no_private_data', ok: privates.length === 0, detail: privates.slice(0, 5).join('; ') },
-    { name: 'examples', ok: (exampleSections >= 2 || whyOne) && badExampleFiles.length === 0 && exampleBytes <= MAX_EXAMPLE_BYTES, detail: exampleSections < 2 && !whyOne ? 'example/README.md needs at least two "## Example N" sections, or a "## Why only one example" section' : badExampleFiles.length ? `example/ may hold only .md, .json and .txt files: ${badExampleFiles.map((f) => basename(f)).join(', ')}` : `example/ is larger than ${MAX_EXAMPLE_BYTES / 1024} KB` },
+    { name: 'examples', ok: (exampleSections >= 2 || evidenceExamples >= 2 || whyOne) && badExampleFiles.length === 0 && exampleBytes <= MAX_EXAMPLE_BYTES, detail: exampleSections < 2 && evidenceExamples < 2 && !whyOne ? 'example/README.md needs at least two "## Example N" sections, an "## Evidence" section that counts at least two examples ("18 examples, 9 version pairs"), or a "## Why only one example" section' : badExampleFiles.length ? `example/ may hold only .md, .json and .txt files: ${badExampleFiles.map((f) => basename(f)).join(', ')}` : `example/ is larger than ${MAX_EXAMPLE_BYTES / 1024} KB` },
     { name: 'size', ok: skillText.split('\n').length <= MAX_SKILL_LINES, detail: `SKILL.md is longer than ${MAX_SKILL_LINES} lines` },
     { name: 'english', ok: !all.some(([, t]) => CYRILLIC.test(t)), detail: 'the final flow files are English (the designer-language draft is kept outside the flow folder)' },
   );

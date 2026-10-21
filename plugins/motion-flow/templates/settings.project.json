@@ -23,8 +23,6 @@
       "Bash(mf-init *)",
       "Bash(mf-setup)",
       "Bash(mf-setup *)",
-      "Bash(mf-flow)",
-      "Bash(mf-flow *)",
       "Bash(mf-sum)",
       "Bash(mf-sum *)",
       "Bash(mf-whatsnew)",

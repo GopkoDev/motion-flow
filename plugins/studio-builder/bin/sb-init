@@ -1,0 +1,32 @@
+#!/usr/bin/env node
+//   sb-init [--project <dir>] [--drive alias,alias | --no-drive] [--studio <name> | --no-studio] [--update-permissions] [--dry-run]
+import { applyPlan, formatPlan, planInit } from '../lib/init-project.mjs';
+
+const args = process.argv.slice(2);
+const option = (name) => {
+  const index = args.indexOf(name);
+  return index === -1 ? null : args[index + 1] ?? null;
+};
+const dryRun = args.includes('--dry-run');
+const driveArg = option('--drive');
+if (driveArg !== null && args.includes('--no-drive')) {
+  process.stderr.write('sb-init: use either --drive or --no-drive, not both.\n');
+  process.exit(1);
+}
+const studioArg = option('--studio');
+if (studioArg !== null && args.includes('--no-studio')) {
+  process.stderr.write('sb-init: use either --studio or --no-studio, not both.\n');
+  process.exit(1);
+}
+// undefined = leave the project's Drive choice as it is
+const drive = args.includes('--no-drive') ? [] : driveArg === null ? undefined : driveArg.split(',').map((a) => a.trim()).filter(Boolean);
+
+try {
+  const plan = planInit({ projectDir: option('--project') ?? process.cwd(), drive, studio: args.includes('--no-studio') ? null : studioArg ?? undefined, permissions: args.includes('--update-permissions') });
+  if (!dryRun) applyPlan(plan);
+  process.stdout.write(`${formatPlan(plan, !dryRun)}\n`);
+  if (dryRun) process.stdout.write('\nDry run: nothing was written.\n');
+} catch (error) {
+  process.stderr.write(`sb-init: ${error.message}\n`);
+  process.exitCode = 1;
+}

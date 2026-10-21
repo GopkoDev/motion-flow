@@ -279,6 +279,7 @@ const AE_TEXT = /DoScriptFile|DoScript\b|afterfx|aerender|Adobe After Effects|Ex
 const GIT_VALUE_OPTIONS = new Set(['-C', '-c', '--git-dir', '--work-tree', '--namespace', '--exec-path', '--super-prefix']);
 const BUILD_LOG = /(^|\/)\.motion\/build\.log\.jsonl$/;
 const AUTO_FILE = /(^|\/)\.motion\/auto\.json$/;
+const INIT_TOOLS = new Set(['mf-init', 'sb-init']);
 const GATE_FILE = /(^|\/)\.motion\/(plan|check)\.md$/;
 // Approval fields: only `mf-gate approve` may write them, after the designer approved.
 const APPROVAL_FIELDS = /^[ \t]*(status:[ \t]*approved|approved:[ \t]*true|plan_sha256:[ \t]*[0-9a-fA-F]{16,}|approved_at:[ \t]*\d)/m;
@@ -511,10 +512,10 @@ class Guard {
     }
   }
 
-  /** mf-init --drive changes which Drive folders a project may read; asking is needed when a choice already exists. */
+  /** mf-init and sb-init --drive change which Drive folders a project may read; asking is needed when a choice already exists. */
   analyzeInit(name, args) {
-    const viaInterpreter = INTERPRETERS.has(name) && args.some((a) => commandName(a) === 'mf-init');
-    if (name !== 'mf-init' && !viaInterpreter) return;
+    const viaInterpreter = INTERPRETERS.has(name) && args.some((a) => INIT_TOOLS.has(commandName(a)));
+    if (!INIT_TOOLS.has(name) && !viaInterpreter) return;
     if (args.includes('--dry-run')) return;
     const at = args.indexOf('--project');
     const project = at === -1 || args[at + 1] === undefined ? this.projectDir : resolve(this.projectDir, args[at + 1]);

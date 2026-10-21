@@ -1,6 +1,6 @@
 # Socratic loop: how to ask the designer questions
 
-Used by `intake`, `new-flow`, `init-rules` and `refine-flow`. The goal is to learn what is missing with as few questions as possible, and to leave a written record of what was assumed.
+Used by `intake`, `new-flow`, `learn-studio` and `refine-flow`. The goal is to learn what is missing with as few questions as possible, and to leave a written record of what was assumed.
 
 ## Rules
 

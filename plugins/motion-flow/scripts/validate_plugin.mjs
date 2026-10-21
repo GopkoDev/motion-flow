@@ -206,9 +206,20 @@ function checkAgents(root, errors) {
 const FLOW_SKILL_REQUIRED = {
   'new-flow': [
     ['mf-flow check', 'must check the flow it wrote with "mf-flow check"'],
-    ['mf-gate archive --park', 'must set an unfinished task aside with "mf-gate archive --park" before the rehearsal'],
-    ['mf-gate restore', 'must give the task back with "mf-gate restore"'],
-    ['save every open After Effects project', 'must ask the designer to save open After Effects projects before the rehearsal'],
+    ['sb-corpus dump', 'must dump the examples with "sb-corpus dump"'],
+    ['sb-corpus analyze', 'must count the changes with "sb-corpus analyze"'],
+    ['without the count from `sb-corpus`', 'must not claim a step is supported by examples without the count'],
+  ],
+  'learn-studio': [
+    ['sb-corpus dump', 'must dump the examples with "sb-corpus dump"'],
+    ['sb-corpus analyze', 'must count the conventions with "sb-corpus analyze"'],
+    ['Never set `status: confirmed`', 'must never confirm a rule'],
+    ['Never write a rule from fewer than three projects', 'must not write a rule from fewer than three projects'],
+  ],
+  'export-claude': [
+    ['sb-export', 'must export with "sb-export"'],
+    ['Never overwrite a file the designer edited', 'must never overwrite a file the designer edited'],
+    ['Never write `.claude/settings.json`', 'must never write settings or permissions'],
   ],
   'refine-flow': [
     ['mf-flow bump', 'must raise the version with "mf-flow bump"'],

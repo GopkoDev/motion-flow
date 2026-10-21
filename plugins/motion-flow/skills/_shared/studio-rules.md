@@ -1,6 +1,6 @@
 # Studio rules: where they are and how to read them
 
-Reference for every step that reads a studio's rules (`intake`, `plan`, `build`, `check`, `deliver`, `whats-new`, `refine-flow`, `publish-flow`). The rules are plain files in a folder; there is no plugin and no marketplace.
+Reference for every step that reads a studio's rules (motion-flow: `intake`, `plan`, `build`, `check`, `deliver`, `whats-new`; studio-builder: `learn-studio`, `new-flow`, `refine-flow`, `publish-flow`, `export-claude`). The rules are plain files in a folder; there is no plugin and no marketplace.
 
 ## Where
 
@@ -17,7 +17,7 @@ Reference for every step that reads a studio's rules (`intake`, `plan`, `build`,
 
 ## How to read them
 
-- Rules are read-only for every step except `init-rules` (which writes drafts into the studio's own folder). A project's settings forbid editing the studios folder; never edit a rule from a project.
+- Rules are read-only for every step except `learn-studio` (which writes drafts into the studio's own folder). A project's settings forbid editing the studios folder; never edit a rule from a project.
 - Every rule file starts with `status: draft` or `status: confirmed`. If a file you read is `draft`, tell the designer once per step which file it is and that it is only a draft, then follow it with extra care and ask when it matters. Never turn a draft into `confirmed`; a person reads it and commits it.
 - A rule is a requirement, not a hint. If the designer's request conflicts with one, say which rule and ask which is right (`socratic-loop.md`); never pick silently.
 - Project exceptions live only in the project's `.motion/overrides.md`.

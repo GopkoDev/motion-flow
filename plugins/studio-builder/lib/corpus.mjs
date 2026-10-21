@@ -81,6 +81,7 @@ export function extractFacts(dump, meta) {
     id: meta.id,
     file: meta.file,
     group: meta.group ?? '',
+    folder: meta.folder ?? null,
     mtimeMs: meta.mtimeMs ?? null,
     stem,
     version,
@@ -221,16 +222,40 @@ export function analyze(rows) {
 
 // ---------- versions of one project: what the designers change ----------
 
-/** Pairs of consecutive versions of the same project (spring_v07, spring_v08), within one group. */
+const BEFORE_NAMES = /^(before|input|source|original|orig|start)$/i;
+const AFTER_NAMES = /^(after|output|result|final|done|end)$/i;
+
+/**
+ * Pairs of projects that show a change. Two kinds:
+ *  - consecutive versions of the same project in one group (spring_v07, spring_v08);
+ *  - a folder that holds one "before" and one "after" project (before.aep / after.aep, input.aep / output.aep, ...).
+ */
 export function findPairs(rows) {
+  const pairs = [];
+  const byFolder = new Map();
+  for (const row of rows) {
+    if (row.folder === undefined || row.folder === null) continue;
+    if (!byFolder.has(row.folder)) byFolder.set(row.folder, []);
+    byFolder.get(row.folder).push(row);
+  }
+  const inFolderPair = new Set();
+  for (const members of byFolder.values()) {
+    const stems = (names) => members.filter((m) => names.test(m.stem));
+    const before = stems(BEFORE_NAMES);
+    const after = stems(AFTER_NAMES);
+    if (before.length === 1 && after.length === 1) {
+      pairs.push({ before: before[0].id, after: after[0].id });
+      inFolderPair.add(before[0].id);
+      inFolderPair.add(after[0].id);
+    }
+  }
   const byProject = new Map();
   for (const row of rows) {
-    if (row.version === null) continue;
+    if (row.version === null || inFolderPair.has(row.id)) continue;
     const key = `${row.group}\u0000${row.stem}`;
     if (!byProject.has(key)) byProject.set(key, []);
     byProject.get(key).push(row);
   }
-  const pairs = [];
   for (const versions of byProject.values()) {
     versions.sort((a, b) => a.version - b.version);
     for (let i = 1; i < versions.length; i++) pairs.push({ before: versions[i - 1].id, after: versions[i].id });

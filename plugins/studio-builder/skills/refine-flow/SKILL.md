@@ -20,7 +20,7 @@ Before starting, read `${CLAUDE_PLUGIN_ROOT}/skills/_shared/safety.md`, `socrati
 6. **Apply only what was approved**, to the English flow files in `.claude/skills/<flow>/`. A flow may add questions, steps and checks; it must never remove an approval gate, skip a check, widen access, or touch settings. If a correction would require that, explain that a flow cannot, and why.
 7. **Record the version.** Run `mf-flow bump .claude/skills/<flow> <patch|minor|major> --note "<what changed, one line, English>"`. This raises `version`, resets `status` to `draft`, and adds the entry to the flow's `CHANGELOG.md`.
 8. **Check.** Run `mf-flow check .claude/skills/<flow>`. Fix what fails and run it again, at most twice; show anything still failing to the designer plainly.
-9. **Hand off** (`handoff.md`): the flow folder, the old and new version, a summary of what changed in the designer's language, the check line, and the next command `/motion-flow:publish-flow` to prepare the new version for review.
+9. **Hand off** (`handoff.md`): the flow folder, the old and new version, a summary of what changed in the designer's language, the check line, and the next command `/studio-builder:publish-flow` to prepare the new version for review.
 
 ## Rules
 

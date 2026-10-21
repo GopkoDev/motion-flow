@@ -1,0 +1,63 @@
+[
+  {
+    "name": "node",
+    "check": "node --version",
+    "version_regex": "v(\\d+\\.\\d+\\.\\d+)",
+    "min_version": "24.0.0",
+    "install": {
+      "macos": "brew install node",
+      "windows": "winget install OpenJS.NodeJS.LTS"
+    },
+    "required_by": [
+      "all"
+    ],
+    "optional": false,
+    "notes": "Runs bin/, hooks/ and scripts/. Minimum version comes from spec section 4.24."
+  },
+  {
+    "name": "ffmpeg",
+    "check": "ffmpeg -version",
+    "version_regex": "ffmpeg version n?(\\d+(?:\\.\\d+)*)",
+    "min_version": "5.0",
+    "install": {
+      "macos": "brew install ffmpeg",
+      "windows": "winget install Gyan.FFmpeg"
+    },
+    "required_by": [
+      "check",
+      "deliver"
+    ],
+    "optional": false,
+    "notes": "Frame and video conversion. Minimum version is a first guess until the delivery rules are confirmed."
+  },
+  {
+    "name": "after-effects",
+    "check": null,
+    "version_regex": null,
+    "min_version": null,
+    "install": {
+      "macos": "Install Adobe After Effects from the Creative Cloud app.",
+      "windows": "Install Adobe After Effects from the Creative Cloud app."
+    },
+    "required_by": [
+      "build",
+      "check"
+    ],
+    "optional": false,
+    "notes": "Doctor looks for an installed After Effects. Run mf-doctor --ping-ae to also start a small script in it (ae-run --ping): it checks that After Effects answers and can write files. The pinged run creates files under work/.ipc of the project. Minimum version is open until the designers' AE versions are known (spec section 13, item 4).",
+    "detect": "after-effects"
+  },
+  {
+    "name": "whisper",
+    "check": "whisper-cli --help",
+    "version_regex": null,
+    "min_version": null,
+    "install": {
+      "macos": "brew install whisper.cpp",
+      "windows": "Download a prebuilt Windows build from https://github.com/ggml-org/whisper.cpp/releases (or build it with CMake, see the project README) and put whisper-cli.exe on PATH."
+    },
+    "required_by": [],
+    "optional": true,
+    "notes": "whisper.cpp (MIT), command whisper-cli. The model is chosen automatically by doctor from the machine RAM and stored in ~/.motion-flow/models/. Windows install is unverified until T2.9."
+  }
+]

@@ -40,11 +40,11 @@ test('discoverProjects finds every .aep below the folder with a group and a stab
   aep('.hidden/y.aep');
   writeFileSync(join(project, 'work', 'examples', 'notes.txt'), 'x');
   const found = discoverProjects('work/examples', project);
-  assert.deepEqual(found.map((p) => [p.id, p.group, p.path]), [
-    ['p001-spring_v01', 'acme', 'work/examples/acme/spring_v01.aep'],
-    ['p002-spring_v02', 'acme', 'work/examples/acme/sub/spring_v02.aep'],
-    ['p003-summer', 'nova', 'work/examples/nova/summer.aep'],
-    ['p004-top', '', 'work/examples/top.aep'],
+  assert.deepEqual(found.map((p) => [p.id, p.group, p.path, p.folder]), [
+    ['p001-spring_v01', 'acme', 'work/examples/acme/spring_v01.aep', 'acme'],
+    ['p002-spring_v02', 'acme', 'work/examples/acme/sub/spring_v02.aep', 'acme/sub'],
+    ['p003-summer', 'nova', 'work/examples/nova/summer.aep', 'nova'],
+    ['p004-top', '', 'work/examples/top.aep', ''],
   ]);
 });
 
