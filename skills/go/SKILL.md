@@ -1,6 +1,6 @@
 ---
 name: go
-description: Run a whole motion task from one command. Use when the designer says "go", "do it", "make it" with a job description, or wants to continue an unfinished task. On the first run in a project it asks once about Google Drive, the studio's rules and the mode (ask or auto), remembers the answers, then runs intake, plan, build, check and deliver. In ask mode it stops at the two approvals; in auto mode it asks nothing and approves its own plan and check.
+description: Run a whole motion task from one command. Use when the designer says "go", "do it", "make it" with a job description, or wants to continue an unfinished task. On the first run in a project it asks once about Google Drive, the studio and the mode (ask or auto), remembers the answers, then runs intake, plan, build, check and deliver. In ask mode it stops at the two approvals; in auto mode it asks nothing and approves its own plan and check.
 model: inherit
 ---
 
@@ -15,7 +15,7 @@ Before starting, read `${CLAUDE_PLUGIN_ROOT}/skills/_shared/gating.md`, `safety.
 | Choice | Where it lives | Set by |
 |---|---|---|
 | Google Drive folders this project may read | `.motion/drive.json` | `mf-init --drive` / `--no-drive` |
-| Studio rules plugin | `enabledPlugins` in `.claude/settings.json` | `mf-init --rules` / `--no-rules` |
+| Studio (rules folder) | `.motion/studio.json` | `mf-init --studio <name>` / `--no-studio` |
 | Mode: ask or auto | `.motion/auto.json` (present = auto) | `mf-gate auto on` / `off` |
 | Where the task stands | `.motion/*.md`, `build.log.jsonl` | the steps; read with `mf-gate status` |
 
@@ -31,11 +31,11 @@ Auto mode is the designer's explicit choice, made once for the project: the answ
 1. **Is the project set up?** It is when `.motion/` and `.claude/settings.json` exist.
    - **Not set up (first run).** Ask all three questions in one `AskUserQuestion` call, in Ukrainian, as the designer sees them together:
      1. Google Drive: no Drive (default), or which of the computer's Drive folders this project may read (`mf-setup --show`; if the computer has none, only offer "no Drive" and mention `/motion-flow:setup` for later).
-     2. The studio's rules plugin: none (default), or the plugin id (`<plugin>@<marketplace>`; the designer may type it with "Other").
+     2. The studio: none (default), or one of the studios found by `mf-studio list` (folders in the studios folder). If none are found, offer only "none" and say that `/motion-flow:init-rules` creates a studio.
      3. Mode: **ask** (default; the agent asks and waits for your approval of the plan and the result) or **auto** (no questions and no approvals; the agent approves its own plan and result).
 
-     Then follow `${CLAUDE_PLUGIN_ROOT}/skills/init-project/SKILL.md` from its preview step with these answers (`mf-init --dry-run`, then `mf-init`), and tell the designer in a short block what was created and the one-time install command for the rules plugin, if one was chosen. If `mf-init` refuses (the folder is inside Drive), give its message and stop. For auto, run `mf-gate auto on`; tell the designer first that its confirmation prompt is what switches auto mode on. If they decline, the project stays in ask mode and you say so.
-   - **Already set up (continuing or a new task).** Do not ask these again. Read the choices (`mf-gate status` for the mode, `.motion/drive.json`, the plugins in `.claude/settings.json`) and say them to the designer in one line in Ukrainian (mode, Drive folders, rules plugin). To change one, the designer says so (for example "switch to ask mode", "turn Drive on"): then use `mf-gate auto off|on`, or `mf-init --drive ... / --rules ...` as `init-project` describes.
+     Then follow `${CLAUDE_PLUGIN_ROOT}/skills/init-project/SKILL.md` from its preview step with these answers (`mf-init --dry-run`, then `mf-init`), and tell the designer in a short block what was created. If `mf-init` refuses (the folder is inside Drive), give its message and stop. For auto, run `mf-gate auto on`; tell the designer first that its confirmation prompt is what switches auto mode on. If they decline, the project stays in ask mode and you say so.
+   - **Already set up (continuing or a new task).** Do not ask these again. Read the choices (`mf-gate status` for the mode, `.motion/drive.json`, `.motion/studio.json`) and say them to the designer in one line in Ukrainian (mode, Drive folders, studio). To change one, the designer says so (for example "switch to ask mode", "turn Drive on"): then use `mf-gate auto off|on`, or `mf-init --drive ... / --studio ...` as `init-project` describes.
 2. **Find the stage.** Run `mf-gate status` and take the first row that fits:
 
    | State | Do |

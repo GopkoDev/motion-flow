@@ -1,6 +1,6 @@
 ---
 name: whats-new
-description: Show the designer what changed in the studio rules and flows since they last looked. Use when the designer asks "what's new", "what changed in the rules", "any new flows", or after the studio rules plugin was updated. Reads the studio rules changelog, compares with what was already seen in this project, and summarizes each change in one sentence.
+description: Show the designer what changed in the studio rules and flows since they last looked. Use when the designer asks "what's new", "what changed in the rules", "any new flows", or after the studio's rules folder was updated. Reads the studio rules changelog, compares with what was already seen in this project, and summarizes each change in one sentence.
 model: inherit
 ---
 
@@ -12,7 +12,7 @@ Read `${CLAUDE_PLUGIN_ROOT}/skills/_shared/safety.md` first. Talk to the designe
 
 ## Steps
 
-1. **Find the changelog.** Load the `studio-rules` skill; the studio rules plugin root (the folder that holds `rules/`) also holds `CHANGELOG.md`. If no studio rules plugin is installed in this project, say so and stop.
+1. **Find the changelog.** Run `mf-studio path`; its `changelog` is the studio's `CHANGELOG.md`. If the project uses no studio rules, or the studio has no changelog, say so and stop.
 2. **Read the state.** `.motion/state.json` keeps `last_seen_rules_version`. If `.motion/` does not exist, tell the designer to run `/motion-flow:init-project` and stop.
 3. **List the changes.** Run `mf-whatsnew --changelog <path to CHANGELOG.md>`. It returns the releases newer than the last seen one (when nothing was seen yet, only the latest few), and the names of the flows that changed. If `up_to_date` is true, say that nothing is new and stop.
 4. **Summarize.** For each release, one short sentence per item, in the designer's language, newest first. Call out new or changed flows by name and say what they are for in one sentence (read the flow's `flow.md` under `flows/<name>/` in the studio rules if the changelog line is not enough). Say which changes affect how they work today (a naming rule, a delivery format) and which are only additions.

@@ -13,7 +13,7 @@ Before starting, read `${CLAUDE_PLUGIN_ROOT}/skills/_shared/gating.md`, `safety.
 ## Steps
 
 1. **Gate.** Run `mf-gate require build`. If it refuses (plan missing, not approved, or changed after approval), give the refusal text from `gating.md` and stop. Do not "repair" the plan or its hash.
-2. **Read the rules the steps need** (`naming`, `motion-system`, `protected` from the studio rules, and `.motion/overrides.md`). **Draft rules.** A studio rule file whose frontmatter says `status: draft` has not been confirmed by a person. When you read one, tell the designer once per step (in Ukrainian) which rule file it is and that it is only a draft, then follow it carefully and ask when it matters. Never treat a draft as settled and never change its status.
+2. **Read the rules the steps need** (`naming`, `motion-system`, `protected` from the studio rules (`mf-studio path`, see `studio-rules.md`), and `.motion/overrides.md`). **Draft rules.** A studio rule file whose frontmatter says `status: draft` has not been confirmed by a person. When you read one, tell the designer once per step (in Ukrainian) which rule file it is and that it is only a draft, then follow it carefully and ask when it matters. Never treat a draft as settled and never change its status.
 3. **Read `.motion/plan.md`** and `.motion/task.md`. Find the source project in `work/` (the input of the task; Drive files were fetched by `plan`) and `project_copy:` from the plan.
 4. **Make the working copy.** Every script runs on `project_copy` from the plan, never on the source, and never on another name: `check` and `deliver` read `project_copy` from the plan, so the copy must be exactly that file.
    - `project_copy` does not exist: `cp -n <source .aep> <project_copy>` inside `work/`.

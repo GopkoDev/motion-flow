@@ -38,7 +38,11 @@
       "Bash(ae-lint)",
       "Bash(ae-lint *)",
       "Bash(aep-version)",
-      "Bash(aep-version *)"
+      "Bash(aep-version *)",
+      "Bash(mf-studio)",
+      "Bash(mf-studio *)",
+      "Bash(mf-sheet)",
+      "Bash(mf-sheet *)"
     ],
     "deny": [
       "Read(//REPLACE/WITH/ABSOLUTE/DRIVE/ROOT/**)",

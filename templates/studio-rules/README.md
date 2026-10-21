@@ -1,8 +1,8 @@
 # <studio name> studio rules
 
-The private rules and approved flows of the studio, used by the `motion-flow` plugin.
+The private rules and approved flows of the studio, read by the `motion-flow` plugin. This is a plain folder: no plugin, no marketplace, nothing to install.
 
-- `skills/studio-rules/SKILL.md`: the index motion-flow steps read.
+- `INDEX.md`: the index motion-flow steps read (which rule file is read by which step).
 - `rules/`: naming, motion system, protected elements, delivery, Drive, the project template, and `ae-lint` checks. Every file is `status: draft` until a person has read it and confirmed it.
 - `flows/`: approved flows, one folder each.
 - `CHANGELOG.md`: what changed, one `## x.y.z` heading per release, flows named as flow `<name>`: ... (read by `/motion-flow:whats-new`).
@@ -11,12 +11,10 @@ Fill the rules in with `/motion-flow:init-rules`, which interviews the designers
 
 ## Using these rules
 
-This folder is both a plugin and its own small catalog (`.claude-plugin/marketplace.json`), so no GitHub is needed. The plugin has a unique name, `<studio>-rules` (for example `acme-rules`), so rules of several studios can live side by side on one computer.
+1. Keep every studio in one folder, one subfolder per studio: `~/Documents/studios/<studio>/` (this folder). `mf-studio dir` prints the folder; put `{"dir": "<path>"}` into `~/.motion-flow/studios.json` to use another one. Keep it outside Google Drive.
+2. In each project of this studio, `/motion-flow:go` (first run) or `/motion-flow:init-project` asks which studio applies; it finds the studios by looking at the folder. The project remembers the name in `.motion/studio.json`.
+3. Edits to the rules take effect at the next step; there is nothing to reload.
 
-1. Add the folder once: `/plugin marketplace add <path to this folder>`.
-2. In each project of this studio: `/motion-flow:init-project` and choose this studio's rules. That enables `<studio>-rules@<studio>-rules` in the project's `.claude/settings.json`; install it once on the computer with `claude plugin install <studio>-rules@<studio>-rules --scope project`.
-3. Edits to the rules take effect after `/reload-plugins` or in a new session.
+A freelancer working for several studios keeps one subfolder per studio and chooses exactly one studio per project.
 
-A freelancer working for several studios keeps one folder per studio and enables only that studio's plugin in each project, never at user scope.
-
-To share the rules with a team, push this folder to a private git repository and add it to the team's catalog.
+To share the rules with a team, make this folder a git repository, push it to a private remote, and have everyone clone it into their studios folder; updates are a `git pull`.
