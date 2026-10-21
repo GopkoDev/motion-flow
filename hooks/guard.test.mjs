@@ -239,6 +239,18 @@ test('mf-gate approve asks for confirmation; the read-only gate commands do not'
   expectAll(['mf-gate require build', 'mf-gate hash plan', 'mf-gate status'], 'allow');
 });
 
+test('auto mode: turning it on asks, approving with --auto asks only until it is on, and auto.json is not writable', () => {
+  expectAll(['mf-gate auto on', 'sudo mf-gate auto on', 'sh -c "mf-gate auto on"'], 'ask');
+  expectAll(['mf-gate auto off', 'mf-gate auto status'], 'allow');
+  expectAll(['mf-gate approve plan --auto', 'mf-gate approve --auto check'], 'ask');
+  mkdirSync(join(project, '.motion'), { recursive: true });
+  writeFileSync(join(project, '.motion', 'auto.json'), JSON.stringify({ enabled: true }));
+  expectAll(['mf-gate approve plan --auto', 'mf-gate approve --auto check'], 'allow');
+  expectAll(['mf-gate approve plan', 'mf-gate approve check'], 'ask');
+  assert.equal(tool('Write', { file_path: join(project, '.motion', 'auto.json'), content: '{"enabled":true}' }).decision, 'deny');
+  assert.equal(bash(`echo '{"enabled":true}' > ${project}/.motion/auto.json`).decision, 'deny');
+});
+
 test('the file tools cannot write an approval into plan.md or check.md, but can write them otherwise', () => {
   const plan = join(project, '.motion', 'plan.md');
   const check = join(project, '.motion', 'check.md');

@@ -11,11 +11,34 @@
     "motion-flow@motion": true
   },
   "permissions": {
+    "defaultMode": "acceptEdits",
     "allow": [
       "Bash(drive-gate)",
       "Bash(drive-gate *)",
       "Bash(mf-doctor)",
-      "Bash(mf-doctor *)"
+      "Bash(mf-doctor *)",
+      "Bash(mf-gate)",
+      "Bash(mf-gate *)",
+      "Bash(mf-init)",
+      "Bash(mf-init *)",
+      "Bash(mf-setup)",
+      "Bash(mf-setup *)",
+      "Bash(mf-flow)",
+      "Bash(mf-flow *)",
+      "Bash(mf-sum)",
+      "Bash(mf-sum *)",
+      "Bash(mf-whatsnew)",
+      "Bash(mf-whatsnew *)",
+      "Bash(ae-run)",
+      "Bash(ae-run *)",
+      "Bash(ae-dump)",
+      "Bash(ae-dump *)",
+      "Bash(ae-render-frame)",
+      "Bash(ae-render-frame *)",
+      "Bash(ae-lint)",
+      "Bash(ae-lint *)",
+      "Bash(aep-version)",
+      "Bash(aep-version *)"
     ],
     "deny": [
       "Read(//REPLACE/WITH/ABSOLUTE/DRIVE/ROOT/**)",

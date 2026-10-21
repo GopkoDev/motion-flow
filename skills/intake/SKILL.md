@@ -12,7 +12,7 @@ Before starting, read: `${CLAUDE_PLUGIN_ROOT}/skills/_shared/safety.md`, `socrat
 
 ## Steps
 
-1. **Check the project is set up.** `.motion/` and `.claude/settings.json` must exist. If not, tell the designer to run `/motion-flow:init-project` first and stop.
+1. **Check the project is set up.** `.motion/` and `.claude/settings.json` must exist. If not, run `mf-init --no-drive --no-rules` (it asks nothing and never overwrites) and tell the designer in one line what it created. Use `/motion-flow:init-project` only when the designer wants Drive or a studio's rules: say so and stop. If `mf-init` refuses (the folder is inside Drive), give its message and stop.
 2. **Check for an earlier task.** Run `mf-gate status`.
    - If `.motion/task.md` exists, show its state and ask with `AskUserQuestion`: continue that task (then stop and give the next command for its state: `plan`, `build`, `check` or `deliver`) or start a new one.
    - To start a new one after a delivered task run `mf-gate archive`. If the old task is unfinished, say plainly that it will be set aside, and only if the designer agrees run `mf-gate archive --abandon`. Never delete or move the files yourself.

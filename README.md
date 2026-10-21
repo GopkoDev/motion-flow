@@ -58,7 +58,7 @@ flowchart TD
     class G1,G2 gate;
 ```
 
-What stops the agent from skipping ahead: `build` refuses without an approved plan, and refuses again if `plan.md` changed after approval (the plan hash no longer matches). `deliver` refuses without an approved check. The agent cannot write the approval fields itself: approving always shows a Claude Code confirmation dialog.
+What stops the agent from skipping ahead: `build` refuses without an approved plan, and refuses again if `plan.md` changed after approval (the plan hash no longer matches). `deliver` refuses without an approved check. The agent cannot write the approval fields itself: approving always shows a Claude Code confirmation dialog. The one exception is **auto mode**, which the designer turns on explicitly (see [Run it in one command](#run-it-in-one-command)).
 
 ### Three layers
 
@@ -149,6 +149,25 @@ After installing, the tools in `bin/` (`mf-gate`, `ae-run`, ...) are on the `PAT
 
 If you do not use Drive, skip step 3. Everything works in no-Drive mode: you copy the source files into the project's `work/` folder.
 
+## Run it in one command
+
+After installing, open a terminal in a project folder outside Drive, start `claude`, and type:
+
+```text
+/motion-flow:go make a 9:16 version of the spring title, 12 seconds
+```
+
+The first time in a project, `go` asks three things once: **Google Drive** (none, or which folders), the **studio's rules** (none, or the plugin), and the **mode**. It sets the project up, remembers the answers, and runs intake, plan, build, check and deliver in a row. Next time you type `/motion-flow:go` it already knows the mode, Drive and rules, reads `mf-gate status`, and continues where the task stopped.
+
+| Mode | What happens |
+|---|---|
+| ask | The agent asks what it needs and stops at the two approvals (after the plan and after the check). |
+| auto | No questions and no approvals: the agent picks defaults (listed as assumptions in `task.md`), approves its own plan and check, and delivers. |
+
+Auto mode is your decision, made once for the project: `mf-gate auto on` shows one Claude Code confirmation prompt. Everything else still applies: work on copies in `work/`, read-only Drive, the script policy, the build log, `mf-gate verify`. Auto approvals are recorded as `approved_by: auto`, and `mf-gate` refuses them (so a person must decide) when the plan touches protected items or the check found issues. To change the mode later, say so ("switch to ask mode") or run `mf-gate auto off`.
+
+The sections below describe each step; you only need them to run a step by hand or to understand what the agent did.
+
 ## Start a project
 
 Open a terminal in the project folder, start `claude`, and run:
@@ -157,7 +176,7 @@ Open a terminal in the project folder, start `claude`, and run:
 /motion-flow:init-project
 ```
 
-It asks two questions, then creates the files:
+`go` does this for you on the first run. Run `init-project` yourself to change the Drive or studio choice later, or to set up without `go`. It asks two questions, then creates the files:
 
 1. **Does this project use Drive?** No Drive, or pick one or more of your Drive folders.
 2. **Which studio's rules apply?** One studio, or none.
@@ -195,6 +214,8 @@ All commands are Claude Code skills, called as `/motion-flow:<name>`. You can al
 
 ### Setup commands
 
+`go` is the shortcut for the five pipeline steps below (see [Run it in one command](#run-it-in-one-command)); the setup commands are needed only for the first run on a computer.
+
 | Command | What it does | When to run it | Runs after / hands off to |
 |---|---|---|---|
 | `/motion-flow:doctor` | Checks Node, ffmpeg, After Effects, whisper, the Drive config, the project's safety settings, the studio rules plugin and plugin versions. Prints a table with install commands. Installs nothing. Can also ping After Effects with a real test script. | First thing on a new computer; whenever a step fails because "a tool is missing"; after updating plugins. | Standalone. Recommends `setup` or `init-project` when it finds them missing. |
@@ -231,8 +252,8 @@ The skills call these tools for you; you rarely type them. They are on the `PATH
 |---|---|---|
 | `mf-doctor` | The engine behind `doctor`. `--ping-ae` runs a real script in After Effects. | `doctor` |
 | `mf-setup` | Detects Drive folders (`--detect`), validates a choice (`--dry-run`), writes `~/.motion-flow/roots.json`, shows it (`--show`). | `setup`, `init-project` |
-| `mf-init` | Creates the project files. `--dry-run` previews; `--drive a,b` or `--no-drive`; `--rules <plugin>@<catalog>` or `--no-rules`. Never overwrites. | `init-project` |
-| `mf-gate` | Pipeline gates: `require <step>`, `hash plan`, `approve <plan\|check>`, `status`, `verify <task\|plan\|check>`, `archive [--abandon\|--park]`, `restore`. | Every pipeline skill |
+| `mf-init` | Creates the project files. `--dry-run` previews; `--drive a,b` or `--no-drive`; `--rules <plugin>@<catalog>` or `--no-rules`; `--update-permissions` adds the allow rules to an older `settings.json`. Never overwrites. | `init-project` |
+| `mf-gate` | Pipeline gates: `require <step>`, `hash plan`, `approve <plan\|check> [--auto]`, `auto <on\|off\|status>`, `status`, `verify <task\|plan\|check>`, `archive [--abandon\|--park]`, `restore`. | Every pipeline skill |
 | `drive-gate` | Read-only Drive access: `ls`, `info`, `fetch` (copies into `work/`, can bring a project's linked files), `log`. No write, move or delete commands exist. | `plan`, `new-flow`, `init-rules` |
 | `ae-run` | The only way to run JSX in After Effects. `--ping`; `--project`, `--script`, `--undo`, `--step`, `--timeout`, `--params`. Writes the build log. | `build`, `doctor` |
 | `ae-dump` | Reads a project into JSON (comps, layers, keyframes, expressions, fonts, footage). Never changes the project. | `plan`, `check`, `new-flow` |
@@ -254,7 +275,9 @@ The skills call these tools for you; you rarely type them. They are on the `PATH
 | `guard` hook | Blocks direct access to Drive folders and to `~/.motion-flow/`, `rm`/`mv` outside `work/`, direct launches of After Effects, and manual writes to the approval fields and the build log. Dangerous git (`push`, `reset --hard`, `clean -f`, `checkout -f`) and deletes inside `work/` ask for your confirmation instead of failing. |
 | Project `permissions` | The same Drive and config paths in `deny`, dangerous git in `ask`, as a second line of defence. |
 
-You will occasionally see Claude Code permission prompts coming from these rules. Read the path or command in the prompt; approve only if it is what you expect.
+Inside a project, `init-project` sets `defaultMode: acceptEdits` and allows the plugin tools (`mf-gate`, `ae-run`, `ae-dump`, ...), so writing `task.md`, `plan.md`, `jsx/*.jsx` and running a build do not ask for confirmation. The guard hook runs before these allow rules and still wins, so the approvals and the other risky actions below keep asking. A project created before v0.1.1 gets the same settings with `mf-init --update-permissions` (`doctor` tells you when it is needed).
+
+Remaining permission prompts come from these rules. Read the path or command in the prompt; approve only if it is what you expect.
 
 Data privacy: the agent reads your projects and the files in `work/`, and that content goes to the model provider through Claude Code. Do not use this on material you are not allowed to send to an AI service.
 

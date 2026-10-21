@@ -278,10 +278,18 @@ const SANCTIONED = new Set(['ae-run', 'ae-dump', 'ae-render-frame', 'ae-lint', '
 const AE_TEXT = /DoScriptFile|DoScript\b|afterfx|aerender|Adobe After Effects|ExtendScript/i;
 const GIT_VALUE_OPTIONS = new Set(['-C', '-c', '--git-dir', '--work-tree', '--namespace', '--exec-path', '--super-prefix']);
 const BUILD_LOG = /(^|\/)\.motion\/build\.log\.jsonl$/;
+const AUTO_FILE = /(^|\/)\.motion\/auto\.json$/;
 const GATE_FILE = /(^|\/)\.motion\/(plan|check)\.md$/;
 // Approval fields: only `mf-gate approve` may write them, after the designer approved.
 const APPROVAL_FIELDS = /^[ \t]*(status:[ \t]*approved|approved:[ \t]*true|plan_sha256:[ \t]*[0-9a-fA-F]{16,}|approved_at:[ \t]*\d)/m;
 const PROTECTED_WRITE = /(^|\/)\.claude\/(settings(\.local)?\.json|plugins(\/|$))/;
+
+/** True when `mf-gate auto on` was confirmed for this project. */
+function autoModeOn(project) {
+  try {
+    return JSON.parse(readFileSync(join(project, '.motion', 'auto.json'), 'utf8')).enabled === true;
+  } catch { return false; }
+}
 
 function commandName(raw) {
   return basename(raw).toLowerCase().replace(/\.(exe|cmd|bat|com)$/, '');
@@ -336,6 +344,9 @@ class Guard {
     }
     if (mode === 'write' && BUILD_LOG.test(path.split(sep).join('/')) && !this.allowBuildLog) {
       this.verdict.add('deny', `${label} is the build log. Only ae-run writes it (ae-run ... --step N), so that it records what really ran. Do not edit it by hand.`);
+    }
+    if (mode === 'write' && AUTO_FILE.test(path.split(sep).join('/'))) {
+      this.verdict.add('deny', `${label} switches auto mode (the agent approving its own plan and check). Only \`mf-gate auto on\` writes it, and the designer confirms that command.`);
     }
     if (mode === 'write' && this.inShell && GATE_FILE.test(path.split(sep).join('/'))) {
       this.verdict.add('ask', `${label} holds a human approval (plan or check). Edit it with the file tools, never with the shell; approvals are written only by mf-gate approve.`);
@@ -490,7 +501,13 @@ class Guard {
     const viaInterpreter = INTERPRETERS.has(name) && args.some((a) => commandName(a) === 'mf-gate');
     if (name !== 'mf-gate' && !viaInterpreter) return;
     if (args.includes('approve')) {
+      const at = args.indexOf('--project');
+      const project = at === -1 || args[at + 1] === undefined ? this.projectDir : resolve(this.projectDir, args[at + 1]);
+      if (args.includes('--auto') && autoModeOn(project)) return; // the designer confirmed auto mode once; the gate itself still refuses protected items and known issues
       this.verdict.add('ask', 'mf-gate approve records the designer\'s approval. Confirm only if the designer has just approved this plan or check (they saw it and said yes).');
+    }
+    if (args.includes('auto') && args.includes('on')) {
+      this.verdict.add('ask', 'mf-gate auto on lets the agent approve its own plan and check for this project, with no question to the designer. Confirm only if the designer chose auto mode.');
     }
   }
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-//   mf-init [--project <dir>] [--drive alias,alias | --no-drive] [--rules <plugin@marketplace> | --no-rules] [--dry-run]
+//   mf-init [--project <dir>] [--drive alias,alias | --no-drive] [--rules <plugin@marketplace> | --no-rules] [--update-permissions] [--dry-run]
 import { applyPlan, formatPlan, planInit } from '../lib/init-project.mjs';
 
 const args = process.argv.slice(2);
@@ -22,7 +22,7 @@ if (rulesArg !== null && args.includes('--no-rules')) {
 const drive = args.includes('--no-drive') ? [] : driveArg === null ? undefined : driveArg.split(',').map((a) => a.trim()).filter(Boolean);
 
 try {
-  const plan = planInit({ projectDir: option('--project') ?? process.cwd(), drive, rules: rulesArg ?? undefined });
+  const plan = planInit({ projectDir: option('--project') ?? process.cwd(), drive, rules: rulesArg ?? undefined, permissions: args.includes('--update-permissions') });
   if (!dryRun) applyPlan(plan);
   process.stdout.write(`${formatPlan(plan, !dryRun)}\n`);
   if (dryRun) process.stdout.write('\nDry run: nothing was written.\n');
