@@ -14,7 +14,7 @@ Reference for `intake`, `plan`, `build`, `check`, `deliver` and every flow. Gati
 
 The human decides twice: after `plan` and after `check`. Nowhere else is an approval asked for.
 
-**Auto mode.** `/motion-flow:go auto` skips both questions. The designer opts in once per task with `mf-gate auto on` (a Claude Code confirmation prompt), after which the agent runs `mf-gate approve plan --auto` and `mf-gate approve check --auto`. These record `approved_by: auto` next to the usual fields. The gate still refuses an auto approval (`auto_not_enabled`, or `auto_needs_human` when the plan touches protected items or the check verdict is `ISSUES`), and every `verify`, hash and build-log rule applies as before. `mf-gate status` shows the mode; archiving the task switches it off.
+**Auto mode.** Auto mode (chosen in `/motion-flow:go`) skips both questions. The designer opts in once per project with `mf-gate auto on` (a Claude Code confirmation prompt), after which the agent runs `mf-gate approve plan --auto` and `mf-gate approve check --auto`. These record `approved_by: auto` next to the usual fields. The gate still refuses an auto approval (`auto_not_enabled`, or `auto_needs_human` when the plan touches protected items or the check verdict is `ISSUES`), and every `verify`, hash and build-log rule applies as before. `mf-gate status` shows the mode; it is a setting of the project and stays on until `mf-gate auto off`.
 
 ## The gate command
 
@@ -41,7 +41,7 @@ mf-gate hash plan             # prints the sha256 of the plan body (see below)
 mf-gate approve plan          # writes approved: true, approved_at and plan_sha256 into plan.md
 mf-gate approve check         # writes approved: true and approved_at into check.md
 mf-gate approve <plan|check> --auto   # the same, recorded as approved_by: auto; refused unless auto mode is on
-mf-gate auto <on|off|status>  # auto mode: the designer confirms `on`; archive switches it off
+mf-gate auto <on|off|status>  # auto mode: the designer confirms `on`; stays until `off`
 mf-gate status                # one-line state of every artifact
 mf-gate restore [<task id>]   # bring an archived or parked task back into .motion/
 mf-gate verify <task|plan|check>   # structural self-check of an artifact; run before showing it

@@ -157,16 +157,16 @@ After installing, open a terminal in a project folder outside Drive, start `clau
 /motion-flow:go make a 9:16 version of the spring title, 12 seconds
 ```
 
-`go` sets the project up if it is not yet (no questions: no Drive, no studio rules), then runs intake, plan, build, check and deliver in a row. It reads `mf-gate status`, so running it again after a break continues where the task stopped.
+The first time in a project, `go` asks three things once: **Google Drive** (none, or which folders), the **studio's rules** (none, or the plugin), and the **mode**. It sets the project up, remembers the answers, and runs intake, plan, build, check and deliver in a row. Next time you type `/motion-flow:go` it already knows the mode, Drive and rules, reads `mf-gate status`, and continues where the task stopped.
 
-| Mode | Command | What happens |
-|---|---|---|
-| ask (default) | `/motion-flow:go <job>` | The agent asks what it needs and stops at the two approvals (after the plan and after the check). |
-| auto | `/motion-flow:go auto <job>` | No questions and no approvals: the agent picks defaults (listed as assumptions in `task.md`), approves its own plan and check, and delivers. |
+| Mode | What happens |
+|---|---|
+| ask | The agent asks what it needs and stops at the two approvals (after the plan and after the check). |
+| auto | No questions and no approvals: the agent picks defaults (listed as assumptions in `task.md`), approves its own plan and check, and delivers. |
 
-Auto mode is your decision, made once per task: `mf-gate auto on` shows one Claude Code confirmation prompt. Everything else still applies: work on copies in `work/`, read-only Drive, the script policy, the build log, `mf-gate verify`. Auto approvals are recorded as `approved_by: auto`, and `mf-gate` refuses them (so a person must decide) when the plan touches protected items or the check found issues. Archiving the task switches auto mode off.
+Auto mode is your decision, made once for the project: `mf-gate auto on` shows one Claude Code confirmation prompt. Everything else still applies: work on copies in `work/`, read-only Drive, the script policy, the build log, `mf-gate verify`. Auto approvals are recorded as `approved_by: auto`, and `mf-gate` refuses them (so a person must decide) when the plan touches protected items or the check found issues. To change the mode later, say so ("switch to ask mode") or run `mf-gate auto off`.
 
-The sections below describe each step; you only need them to run a step by hand, to connect Drive or a studio's rules, or to understand what the agent did.
+The sections below describe each step; you only need them to run a step by hand or to understand what the agent did.
 
 ## Start a project
 
@@ -176,7 +176,7 @@ Open a terminal in the project folder, start `claude`, and run:
 /motion-flow:init-project
 ```
 
-`go` and `intake` do this for you with the defaults (no Drive, no rules). Run `init-project` yourself when you want Drive or a studio's rules. It asks two questions, then creates the files:
+`go` does this for you on the first run. Run `init-project` yourself to change the Drive or studio choice later, or to set up without `go`. It asks two questions, then creates the files:
 
 1. **Does this project use Drive?** No Drive, or pick one or more of your Drive folders.
 2. **Which studio's rules apply?** One studio, or none.

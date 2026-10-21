@@ -507,7 +507,7 @@ class Guard {
       this.verdict.add('ask', 'mf-gate approve records the designer\'s approval. Confirm only if the designer has just approved this plan or check (they saw it and said yes).');
     }
     if (args.includes('auto') && args.includes('on')) {
-      this.verdict.add('ask', 'mf-gate auto on lets the agent approve its own plan and check for this task, with no question to the designer. Confirm only if the designer chose auto mode.');
+      this.verdict.add('ask', 'mf-gate auto on lets the agent approve its own plan and check for this project, with no question to the designer. Confirm only if the designer chose auto mode.');
     }
   }
 
