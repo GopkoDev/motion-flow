@@ -430,7 +430,8 @@ The full task list with acceptance criteria is in [`docs/TASKS.md`](docs/TASKS.m
 
 ## Documentation and credits
 
-- [`docs/motion-flow-spec.md`](docs/motion-flow-spec.md): the full specification, including section 16 with the decisions made during development.
+- [`docs/v2/`](docs/v2/README.md): version 0.2.0: the two plugins and the shared core, how the studio is learned from many examples, flows from pairs and the standalone export, After Effects project switching, migration from v1. Where it disagrees with the specification, it wins.
+- [`docs/motion-flow-spec.md`](docs/motion-flow-spec.md): the original (single-plugin) specification, including section 16 with the decisions made during development.
 - [`docs/TASKS.md`](docs/TASKS.md): milestones and tasks.
 - [`docs/schemas-notes.md`](docs/schemas-notes.md): notes on the Claude Code plugin, marketplace, hooks and settings schemas, checked against the docs.
 - [`NOTICE`](NOTICE): attribution.
