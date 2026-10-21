@@ -1,6 +1,6 @@
 {
   "name": "motion-flow",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Agentic pipeline for After Effects motion teams: intake → plan → build → check → deliver, with human approval after plan and check, read-only Google Drive access, and After Effects driven through JSX.",
   "author": {
     "name": "Dmytro Hopko",

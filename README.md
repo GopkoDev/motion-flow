@@ -231,7 +231,7 @@ The skills call these tools for you; you rarely type them. They are on the `PATH
 |---|---|---|
 | `mf-doctor` | The engine behind `doctor`. `--ping-ae` runs a real script in After Effects. | `doctor` |
 | `mf-setup` | Detects Drive folders (`--detect`), validates a choice (`--dry-run`), writes `~/.motion-flow/roots.json`, shows it (`--show`). | `setup`, `init-project` |
-| `mf-init` | Creates the project files. `--dry-run` previews; `--drive a,b` or `--no-drive`; `--rules <plugin>@<catalog>` or `--no-rules`. Never overwrites. | `init-project` |
+| `mf-init` | Creates the project files. `--dry-run` previews; `--drive a,b` or `--no-drive`; `--rules <plugin>@<catalog>` or `--no-rules`; `--update-permissions` adds the allow rules to an older `settings.json`. Never overwrites. | `init-project` |
 | `mf-gate` | Pipeline gates: `require <step>`, `hash plan`, `approve <plan\|check>`, `status`, `verify <task\|plan\|check>`, `archive [--abandon\|--park]`, `restore`. | Every pipeline skill |
 | `drive-gate` | Read-only Drive access: `ls`, `info`, `fetch` (copies into `work/`, can bring a project's linked files), `log`. No write, move or delete commands exist. | `plan`, `new-flow`, `init-rules` |
 | `ae-run` | The only way to run JSX in After Effects. `--ping`; `--project`, `--script`, `--undo`, `--step`, `--timeout`, `--params`. Writes the build log. | `build`, `doctor` |
@@ -254,7 +254,9 @@ The skills call these tools for you; you rarely type them. They are on the `PATH
 | `guard` hook | Blocks direct access to Drive folders and to `~/.motion-flow/`, `rm`/`mv` outside `work/`, direct launches of After Effects, and manual writes to the approval fields and the build log. Dangerous git (`push`, `reset --hard`, `clean -f`, `checkout -f`) and deletes inside `work/` ask for your confirmation instead of failing. |
 | Project `permissions` | The same Drive and config paths in `deny`, dangerous git in `ask`, as a second line of defence. |
 
-You will occasionally see Claude Code permission prompts coming from these rules. Read the path or command in the prompt; approve only if it is what you expect.
+Inside a project, `init-project` sets `defaultMode: acceptEdits` and allows the plugin tools (`mf-gate`, `ae-run`, `ae-dump`, ...), so writing `task.md`, `plan.md`, `jsx/*.jsx` and running a build do not ask for confirmation. The guard hook runs before these allow rules and still wins, so the approvals and the other risky actions below keep asking. A project created before v0.1.1 gets the same settings with `mf-init --update-permissions` (`doctor` tells you when it is needed).
+
+Remaining permission prompts come from these rules. Read the path or command in the prompt; approve only if it is what you expect.
 
 Data privacy: the agent reads your projects and the files in `work/`, and that content goes to the model provider through Claude Code. Do not use this on material you are not allowed to send to an AI service.
 
