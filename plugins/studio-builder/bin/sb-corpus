@@ -1,0 +1,30 @@
+#!/usr/bin/env node
+//   sb-corpus dump    --examples work/examples [--out work/corpus]   dump every .aep (After Effects, one at a time)
+//   sb-corpus analyze [--out work/corpus]                             count conventions, conflicts and version changes
+import { analyzeCorpus, CorpusError, dumpAll } from '../lib/corpus-run.mjs';
+
+const args = process.argv.slice(2);
+const option = (name, fallback = null) => {
+  const at = args.indexOf(name);
+  return at === -1 ? fallback : args[at + 1] ?? fallback;
+};
+const emit = (value) => process.stdout.write(`${JSON.stringify(value)}\n`);
+
+try {
+  const out = option('--out', 'work/corpus');
+  if (args[0] === 'dump') {
+    const examples = option('--examples');
+    if (!examples) throw new CorpusError('usage', 'Usage: sb-corpus dump --examples work/examples [--out work/corpus]');
+    const result = await dumpAll({ examples, out, onProgress: ({ n, total, project }) => process.stderr.write(`[${n}/${total}] ${project.path}\n`) });
+    emit({ ok: result.failed.length === 0, ...result });
+    process.exitCode = result.failed.length ? 1 : 0;
+  } else if (args[0] === 'analyze') {
+    emit({ ok: true, ...analyzeCorpus({ dir: out }) });
+  } else {
+    throw new CorpusError('usage', 'Usage: sb-corpus dump --examples <folder> | analyze  [--out work/corpus]');
+  }
+} catch (error) {
+  if (!(error instanceof CorpusError)) throw error;
+  emit({ ok: false, reason: error.code, error: error.message, ...(error.hint ? { hint: error.hint } : {}) });
+  process.exitCode = error.code === 'usage' ? 2 : 1;
+}

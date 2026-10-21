@@ -1,0 +1,12 @@
+#!/usr/bin/env node
+import { main, releaseActiveLock } from '../lib/ae-run.mjs';
+
+// Do not leave the lock behind when the person presses Ctrl+C or the process is stopped.
+for (const [signal, code] of [['SIGINT', 130], ['SIGTERM', 143]]) {
+  process.on(signal, () => {
+    releaseActiveLock();
+    process.exit(code);
+  });
+}
+
+process.exitCode = await main(process.argv.slice(2));

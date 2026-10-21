@@ -1,0 +1,7 @@
+#!/usr/bin/env node
+// Writes a JSON dump of a project copy in work/. Never changes the project. A thin wrapper over ae-run.
+import { dump } from '../lib/ae-tools.mjs';
+import { releaseActiveLock } from '../lib/ae-run.mjs';
+
+for (const [signal, code] of [['SIGINT', 130], ['SIGTERM', 143]]) process.on(signal, () => { releaseActiveLock(); process.exit(code); });
+process.exitCode = await dump(process.argv.slice(2));

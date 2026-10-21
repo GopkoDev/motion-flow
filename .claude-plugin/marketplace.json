@@ -8,8 +8,13 @@
   "plugins": [
     {
       "name": "motion-flow",
-      "source": "./",
+      "source": "./plugins/motion-flow",
       "description": "Universal intake → plan → build → check → deliver pipeline for After Effects."
+    },
+    {
+      "name": "studio-builder",
+      "source": "./plugins/studio-builder",
+      "description": "Builds a studio's design system and flows from many example projects, then hands them to motion-flow or exports them as a standalone .claude/."
     }
   ]
 }

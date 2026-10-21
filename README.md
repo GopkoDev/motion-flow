@@ -10,7 +10,7 @@ A [Claude Code](https://claude.com/claude-code) plugin that gives a motion team 
 - **Originals are never touched.** The agent works only on copies inside `work/`. Google Drive is read-only and reachable only through a small allowlisted tool (`drive-gate`). Nothing is written to Drive, nothing is deleted.
 - **After Effects is driven by plain JSX scripts** run through one launcher (`ae-run`). No MCP server, no background service.
 - **Studio rules live apart from the engine.** Naming, motion system, delivery formats and "do not touch" lists are a plain folder per studio (no plugin to install), so one engine serves many studios.
-- **Designers create their own flows.** A repeatable job ("resize for all social formats") is taught to the agent by interview and example, rehearsed on a copy, and published for review.
+- **The studio teaches itself from examples.** A second plugin, `studio-builder`, reads as many example projects as you give it, counts the conventions in code, settles contradictions where the numbers decide, and writes the studio's design system and its flows. The pipeline uses the result; or you export a standalone `.claude/` and orchestrate it yourself.
 
 > Status: milestones M0–M5 are implemented and covered by 400+ automated tests that need no After Effects. The parts that need a real After Effects (launching scripts, rendering frames) are written but still waiting for a manual check on a machine with AE. No license has been chosen yet. See [Status](#status).
 
@@ -26,7 +26,7 @@ A [Claude Code](https://claude.com/claude-code) plugin that gives a motion team 
 - [Command-line tools](#command-line-tools)
 - [Safety model](#safety-model)
 - [Recommended folder structure](#recommended-folder-structure)
-- [Studio rules and flows](#studio-rules-and-flows)
+- [Studio builder](#studio-builder)
 - [Troubleshooting](#troubleshooting)
 - [Development](#development)
 - [Status](#status)
@@ -120,13 +120,17 @@ In Claude Code, add this repository as a plugin catalog and install the plugin:
 ```text
 /plugin marketplace add GopkoDev/motion-flow
 /plugin install motion-flow@motion
+/plugin install studio-builder@motion
 ```
+
+`motion-flow` is the pipeline. `studio-builder` is optional: it builds the studio's rules and flows from example projects (see [Studio builder](#studio-builder)). The two do not depend on each other; they share a few tools, so keep them at the same version (`doctor` warns when they differ).
 
 Or from a terminal, scoped to a project so everyone on it gets the same version:
 
 ```bash
 claude plugin marketplace add GopkoDev/motion-flow
 claude plugin install motion-flow@motion --scope project
+claude plugin install studio-builder@motion --scope project
 ```
 
 Working from a local clone (for example while developing) works the same way, with a path instead of the GitHub name:
@@ -137,9 +141,9 @@ claude plugin marketplace add ~/tools/motion-flow
 claude plugin install motion-flow@motion --scope project
 ```
 
-Scopes: use `project` for the shared setup, `local` for your own experiments, and studio rules are not plugins any more (see [Studio rules](#studio-rules-and-flows)).
+Scopes: use `project` for the shared setup, `local` for your own experiments, and studio rules are not plugins any more (see [Studio builder](#studio-builder)).
 
-After installing, the tools in `bin/` (`mf-gate`, `ae-run`, ...) are on the `PATH` inside Claude Code sessions, and the slash commands appear as `/motion-flow:<name>`.
+After installing, the tools in `bin/` (`mf-gate`, `ae-run`, ...) are on the `PATH` inside Claude Code sessions, and the slash commands appear as `/motion-flow:<name>` and `/studio-builder:<name>`.
 
 ## First-time setup (once per computer)
 
@@ -203,7 +207,7 @@ If you picked a studio, the project may read (never edit) the studios folder. Ru
 5. `/motion-flow:build` → the agent runs the plan step by step on a copy.
 6. `/motion-flow:check` → look at the frames and the table. Approve, or send it back.
 7. `/motion-flow:deliver` → copy the files listed in `.motion/deliver.md` to Drive yourself.
-8. If you had to fix something by hand, run `/motion-flow:refine-flow` so the next run gets it right.
+8. If you had to fix something by hand, run `/studio-builder:refine-flow` so the next run gets it right.
 
 Each step ends with a short **handoff**: what was done, what to check, and the exact next command. You can `/clear` between steps; everything the next step needs is on disk in `.motion/`.
 
@@ -222,7 +226,6 @@ All commands are Claude Code skills, called as `/motion-flow:<name>`. You can al
 | `/motion-flow:doctor` | Checks Node, ffmpeg, After Effects, whisper, the Drive config, the project's safety settings, the project's studio folder (and which rules are still drafts) and plugin versions. Prints a table with install commands. Installs nothing. Can also ping After Effects with a real test script. | First thing on a new computer; whenever a step fails because "a tool is missing"; after updating plugins. | Standalone. Recommends `setup` or `init-project` when it finds them missing. |
 | `/motion-flow:setup` | Finds your Google Drive for Desktop folders and records the ones you allow in `~/.motion-flow/roots.json`. The first write needs no questions; changing an existing file asks for confirmation. | Once per computer, only if you use Drive. Again when you add or change Drive folders. | After `doctor`. Hands off to `init-project`. |
 | `/motion-flow:init-project` | Prepares the current folder as a motion project: safety settings, `CLAUDE.md`, `.gitignore` lines, `.motion/`, `work/`. Asks about Drive and about the studio rules. Safe to re-run to change those choices. | Once at the start of every project. | After `setup` (if Drive). Hands off to `intake`. |
-| `/motion-flow:init-rules` | Builds the first draft of a studio's rules from 1-2 finished reference projects and an interview: naming, protected items, delivery formats, Drive layout. Everything is written as `status: draft` with `TODO: confirm` marks. | Once per studio, inside the studio's own folder in the studios folder, `~/Documents/studios/<studio>` (see [Studio rules](#studio-rules-and-flows)). | After `doctor`/`setup`. A person reads, edits and commits the drafts. |
 
 ### The five pipeline steps
 
@@ -234,15 +237,12 @@ All commands are Claude Code skills, called as `/motion-flow:<name>`. You can al
 | `/motion-flow:check` | Runs `ae-lint` against the studio's checks, takes a fresh dump and compares it to the plan, renders the planned frames (plus first, last and mid-transition frames) with `ae-render-frame`, and traces **every acceptance criterion** to evidence (`PASS`, `FAIL`, `NOT_VERIFIED`). A separate read-only agent (`check-reviewer`) with a clean context, which never saw the build, re-checks the evidence from the files. It judges against the plan and rules, never taste. Then asks for your approval. | A clean `build.log.jsonl`. Refuses otherwise. | `.motion/check.md`, `work/frames/*.png` | **Approval 2**, then `deliver` (or back to `plan` on issues) |
 | `/motion-flow:deliver` | Names the files by the studio rules, gathers them in `work/out/` with checksums, tells you what to copy to Drive and where, writes the changelog line. Asks whether to render video; today you export in After Effects into `work/out/` and it verifies the file. Optionally makes a local git commit of the text artifacts. Writes nothing to Drive. | An approved `check.md`. Refuses otherwise. | `work/out/*`, `.motion/deliver.md`, `.motion/changelog.md` | You (copy to Drive), then `refine-flow` if you fixed things by hand |
 
-### Flow commands
+### Studio commands in motion-flow
 
-A **flow** is a repeatable kind of job that the studio teaches the agent once. Flows tune the five steps (what to ask, what to check) but can never weaken the safety rules.
+Creating and improving flows is done by the `studio-builder` plugin (see [Studio builder](#studio-builder)). motion-flow only reads what it builds:
 
 | Command | What it does | When to run it | Hands off to |
 |---|---|---|---|
-| `/motion-flow:new-flow` | You tell the story of how you do the job and show a real example. The agent interviews you one question at a time, reads the example through `drive-gate` and `ae-dump`, asks for a second, different example, drafts the flow in your language, then **rehearses it** on a copy. Before the rehearsal your current task is safely parked (it warns you, asks you to save your AE projects, and brings the task back unchanged afterwards). Examples are kept as anonymous notes, never as files. The final flow files are English. | When you do the same job repeatedly, or `intake` finds no flow that fits a job that will come again. | `publish-flow` |
-| `/motion-flow:refine-flow` | After a delivery asks "what did you have to fix by hand?", compares the agent's result with yours, proposes a change in plain words ("always, or only here?"), and after your approval raises the flow's version, resets its status to `draft` and logs the change. | After `deliver`, when you corrected something. | `publish-flow` |
-| `/motion-flow:publish-flow` | Checks the flow (`mf-flow check`), reads it against the safety rules, and packs it into `work/out/flow-<name>-<version>.zip`. It tells you to put the zip into `_flows-pending/` on Drive for review; the agent never writes to Drive. | After `new-flow` or `refine-flow`. | A reviewer (see [Studio rules and flows](#studio-rules-and-flows)) |
 | `/motion-flow:whats-new` | Shows, in one sentence each, what changed in the studio rules and flows since you last looked (reads the rules' `CHANGELOG.md`, remembers what you saw in `.motion/state.json`). | After the studio rules plugin was updated. | Standalone |
 
 ## Command-line tools
@@ -255,16 +255,15 @@ The skills call these tools for you; you rarely type them. They are on the `PATH
 | `mf-setup` | Detects Drive folders (`--detect`), validates a choice (`--dry-run`), writes `~/.motion-flow/roots.json`, shows it (`--show`). | `setup`, `init-project` |
 | `mf-init` | Creates the project files. `--dry-run` previews; `--drive a,b` or `--no-drive`; `--studio <name>` or `--no-studio`; `--update-permissions` adds the allow rules to an older `settings.json`. Never overwrites. | `init-project` |
 | `mf-gate` | Pipeline gates: `require <step>`, `hash plan`, `approve <plan\|check> [--auto]`, `auto <on\|off\|status>`, `status`, `verify <task\|plan\|check>`, `archive [--abandon\|--park]`, `restore`. | Every pipeline skill |
-| `drive-gate` | Read-only Drive access: `ls`, `info`, `fetch` (copies into `work/`, can bring a project's linked files), `log`. No write, move or delete commands exist. | `plan`, `new-flow`, `init-rules` |
+| `drive-gate` | Read-only Drive access: `ls`, `info`, `fetch` (copies into `work/`, can bring a project's linked files), `log`. No write, move or delete commands exist. | `plan`, `learn-studio`, `new-flow` |
 | `ae-run` | The only way to run JSX in After Effects. `--ping`; `--project`, `--script`, `--undo`, `--step`, `--timeout`, `--params`. Writes the build log. | `build`, `doctor` |
-| `ae-dump` | Reads a project into JSON (comps, layers, keyframes, expressions, fonts, footage). Never changes the project. | `plan`, `check`, `new-flow` |
+| `ae-dump` | Reads a project into JSON (comps, layers, keyframes, expressions, fonts, footage). Never changes the project. | `plan`, `check`, `sb-corpus` |
 | `ae-render-frame` | Renders one frame of a comp to PNG at a given time. | `check` |
 | `ae-lint` | Runs the studio's declarative checks on a dump (fps, size, names, missing media/fonts, default layer names, protected items). | `check` |
 | `aep-version` | Computes the next version name (`spring_v07.aep` → `spring_v08.aep`) without overwriting. | `build`, `deliver` |
 | `mf-studio` | Finds studio rules in the studios folder: `list`, `dir`, `path` (where the project's studio rules are). | `go`, `init-project`, every step that reads rules |
 | `mf-sheet` | Puts the check frames into one numbered contact sheet with ffmpeg (up to 12 per sheet), so `check` reads one image instead of 12-20. | `check` |
 | `mf-sum` | SHA-256 checksums for delivered files. | `deliver` |
-| `mf-flow` | `check`, `bump`, `pack` for flows (validation, version bump with changelog, deterministic zip). | `new-flow`, `refine-flow`, `publish-flow` |
 | `mf-whatsnew` | Reads a rules changelog and what you already saw. | `whats-new` |
 
 ## Safety model
@@ -323,12 +322,38 @@ Tips for a comfortable setup:
 - **Git is optional.** Use it for the plugin and the studio folders. In a project, commit only text (`.motion/`, `jsx/`); never `.aep`, footage or renders.
 - **Handy habit:** run `/motion-flow:doctor` at the start of the day on a new machine, and `/clear` between pipeline steps to keep the chat light.
 
-## Studio rules and flows
+## Studio builder
 
-The rules of a studio are a plain folder, created once from a scaffold shipped in this repo (`templates/studio-rules/`):
+`studio-builder` is a separate, optional plugin. It turns example projects into the studio's **design system** (naming, motion system, protected items, delivery, Drive layout) and **flows** (repeatable jobs), as plain files in a folder per studio: `~/Documents/studios/<studio>/`. The pipeline reads that folder; nothing is installed per studio.
+
+### Why many examples
+
+The old way read one or two projects and then interviewed you. The builder takes **every project you give it**, because a count of 45 of 50 is evidence and one project is a guess:
+
+1. Put the examples in `work/examples/` (one sub-folder per client or campaign if you can), or point it at Drive folders. Old, ugly and mixed projects are welcome: the counts need the real mix.
+2. `sb-corpus dump` opens each project in After Effects, one at a time, and reads its structure. It switches projects by itself when the open one is saved and unchanged, and stops (never closes) when it has unsaved changes. Dumps are reused, so an interrupted run continues.
+3. `sb-corpus analyze` counts, in code: frame rate, sizes, name patterns, fonts, effects, easing, default layer names, expressions. The agent reads a short report, not 50 dumps.
+4. **Contradictions are settled where the numbers decide.** A convention used by 80% of the projects is the rule. A value that only older projects use is a legacy shift (the studio moved on). A value that follows the client folder is a rule per client. Only a real tie, or no majority, becomes a question for you, and all such questions come together with the counts and a recommended answer.
+5. Everything is written as `status: draft` with the support ("45 of 50 projects"). A person confirms each rule; the agent never does.
+
+### Commands
+
+| Command | What it does |
+|---|---|
+| `/studio-builder:learn-studio` | Builds the design system from the examples, as described above. Run it in `~/Documents/studios/<studio>`. Run it again when more examples arrive. |
+| `/studio-builder:new-flow` | Learns a repeatable job from before/after pairs and successive versions (`spring_v07` → `spring_v08`, or `before.aep` / `after.aep` in one folder). `sb-corpus` counts which changes repeat; you sort them into "part of the flow", "incidental" and "wrong"; the draft is checked step by step against the evidence. |
+| `/studio-builder:refine-flow` | After a delivery, compares the result with what you fixed by hand, proposes a change ("always, or only here?"), bumps the version and sets the flow back to `draft`. |
+| `/studio-builder:publish-flow` | Checks the flow (`mf-flow check`), reads it against the safety rules and packs it into `work/out/flow-<name>-<version>.zip` for the reviewer. |
+| `/studio-builder:export-claude` | Exports the design system and the flows as a standalone `.claude/` (a `CLAUDE.md`, `.claude/rules/design-system/`, one skill per flow) in a folder you choose, so you can orchestrate without the five-step pipeline. Re-running it refreshes the studio's files and keeps the ones you edited. |
+
+Tools: `sb-corpus` (dump, analyze), `sb-export`, `sb-init`, `mf-flow` (check, bump, pack), and the shared `ae-dump`, `ae-run`, `drive-gate`, `mf-studio`.
+
+### Where the studio's files live
+
+The rules of a studio are a plain folder, created once from a scaffold shipped in this repo (`plugins/studio-builder/templates/studio-rules/`):
 
 1. Create `~/Documents/studios/<slug>` (a short lowercase name such as `acme`), `git init` it if you want to share it, and open Claude Code there.
-2. Run `/motion-flow:init-rules`. It copies the scaffold, then drafts the rules from your reference projects and an interview.
+2. Run `/studio-builder:learn-studio`. It copies the scaffold, then builds the drafts from your examples.
 3. A person reads each rule, fixes it, sets `status: confirmed` and commits. Until then, steps warn that they are reading a `draft`.
 4. Every project picks the studio by name, once, in `go` (first run) or `init-project`. The team clones the same folder into their own studios folder.
 
@@ -336,15 +361,15 @@ How a flow gets from one designer to the whole team:
 
 ```mermaid
 flowchart LR
-    N["/motion-flow:new-flow<br/>interview + examples<br/>rehearsal on a copy"] --> DR["flow in the project's<br/>.claude/skills/ (draft)"]
-    DR --> PU["/motion-flow:publish-flow<br/>mf-flow check + pack"]
+    N["/studio-builder:new-flow<br/>many examples + pairs<br/>counted in code"] --> DR["flow in the folder's<br/>.claude/skills/ (draft)"]
+    DR --> PU["/studio-builder:publish-flow<br/>mf-flow check + pack"]
     PU --> ZIP[("work/out/flow-name-version.zip")]
     ZIP -->|designer copies by hand| PEND[("_flows-pending/ on Drive")]
     PEND --> REV{"Reviewer<br/>reads the flow against safety.md,<br/>runs mf-flow check"}
-    REV -->|approved| REPO["flows/ in the rules repo<br/>+ CHANGELOG entry, commit"]
+    REV -->|approved| REPO["flows/ in the studio folder<br/>+ CHANGELOG entry, commit"]
     REPO --> UPD["Team runs git pull in the studio folder"]
     UPD --> WN["/motion-flow:whats-new"]
-    WN -.->|used, fixed by hand| RF["/motion-flow:refine-flow<br/>version bump, back to draft"]
+    WN -.->|used, fixed by hand| RF["/studio-builder:refine-flow<br/>version bump, back to draft"]
     RF --> PU
 ```
 
@@ -355,7 +380,7 @@ flowchart LR
 | A step answers "refused: plan_not_approved" or "plan_changed_after_approval" | That is the gate working. Approve the plan again, or run `plan` to change it. |
 | `build` refuses with `build_failed` / `check` refuses | The log has an error. Read `.motion/build.log.jsonl`, fix the cause, rebuild. |
 | "No Drive folders are set up on this computer" | Fine without Drive. Otherwise run `/motion-flow:setup`. |
-| "Another project is open in After Effects" | Save and close it. The tool never closes your work for you. |
+| "Another project is open in After Effects" | That project has unsaved changes (or was never saved). Save and close it. The tools switch projects by themselves only when the open one is saved and unchanged, so your work is never lost. |
 | `ae-run --ping` times out | Check that After Effects is installed, that the script-access setting is on, and that no modal dialog is open in AE. |
 | A permission prompt appears for `rm`, `git push`, a Drive path | Intended. Read it and approve only if you expect it. A direct Drive path or a launch of AE outside the tools is blocked outright. |
 | `project settings.json not found` in `doctor` | Run `/motion-flow:init-project` in the project folder. |
@@ -363,11 +388,24 @@ flowchart LR
 
 ## Development
 
+The repository holds two plugins and one catalog:
+
+```text
+.claude-plugin/marketplace.json   the catalog ("motion"): motion-flow and studio-builder
+plugins/motion-flow/              the pipeline: intake, plan, build, check, deliver
+plugins/studio-builder/           builds a studio's rules and flows from example projects
+shared/                           code both plugins need (After Effects and Drive tools, guard hook)
+scripts/                          repository checks: sync-shared, language, catalog
+```
+
+A plugin is installed on its own, so it cannot read a sibling folder. Code that both need lives once in `shared/` and is **copied** into each plugin (the copies are committed, listed in each plugin's `.shared.json`). Edit the file in `shared/`, then run `npm run sync`; `npm test` fails if a copy differs from its source. Both plugins are released together with the same version.
+
 ```bash
-npm test                              # all unit tests (node:test), no After Effects needed
-node scripts/validate_plugin.mjs      # structural validator for manifests, skills, templates
-claude plugin validate .claude-plugin/plugin.json
-node scripts/check_jsx.mjs [--policy] <folder>   # ES3 / script-policy check for JSX
+npm run sync                          # copy shared/ into the plugins after editing it
+npm test                              # sync check + all unit tests (node:test), no After Effects needed
+node plugins/motion-flow/scripts/validate_plugin.mjs plugins/motion-flow   # structural validator for a plugin
+claude plugin validate plugins/motion-flow/.claude-plugin/plugin.json
+node plugins/motion-flow/scripts/check_jsx.mjs [--policy] <folder>         # ES3 / script-policy check for JSX
 ```
 
 Rules for contributing:
@@ -392,7 +430,8 @@ The full task list with acceptance criteria is in [`docs/TASKS.md`](docs/TASKS.m
 
 ## Documentation and credits
 
-- [`docs/motion-flow-spec.md`](docs/motion-flow-spec.md): the full specification, including section 16 with the decisions made during development.
+- [`docs/v2/`](docs/v2/README.md): version 0.2.0: the two plugins and the shared core, how the studio is learned from many examples, flows from pairs and the standalone export, After Effects project switching, migration from v1. Where it disagrees with the specification, it wins.
+- [`docs/motion-flow-spec.md`](docs/motion-flow-spec.md): the original (single-plugin) specification, including section 16 with the decisions made during development.
 - [`docs/TASKS.md`](docs/TASKS.md): milestones and tasks.
 - [`docs/schemas-notes.md`](docs/schemas-notes.md): notes on the Claude Code plugin, marketplace, hooks and settings schemas, checked against the docs.
 - [`NOTICE`](NOTICE): attribution.

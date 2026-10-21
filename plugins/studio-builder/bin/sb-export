@@ -1,0 +1,34 @@
+#!/usr/bin/env node
+//   sb-export --to <folder> [--studio <name> | --from <studio folder>] [--include-drafts]
+// Builds a standalone .claude/ (design system + one skill per flow) in <folder> from a studio folder.
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { exportClaude } from '../lib/export-claude.mjs';
+import { listStudios, studiosDir } from '../lib/studios.mjs';
+
+const args = process.argv.slice(2);
+const option = (name) => {
+  const at = args.indexOf(name);
+  return at === -1 ? null : args[at + 1] ?? null;
+};
+const emit = (value) => process.stdout.write(`${JSON.stringify(value)}\n`);
+
+try {
+  const to = option('--to');
+  if (!to) throw new Error('Usage: sb-export --to <folder> [--studio <name> | --from <studio folder>] [--include-drafts]');
+  let studioDir = option('--from');
+  let name = null;
+  if (!studioDir) {
+    const wanted = option('--studio');
+    const studios = listStudios(studiosDir());
+    const found = wanted ? studios.find((s) => s.name === wanted) : studios.length === 1 ? studios[0] : null;
+    if (!found) throw new Error(wanted ? `Unknown studio "${wanted}". Studios: ${studios.map((s) => s.name).join(', ') || 'none'}.` : `Say which studio: --studio <name>. Studios: ${studios.map((s) => s.name).join(', ') || 'none'}.`);
+    studioDir = found.path;
+    name = found.name;
+  }
+  const extraFlows = args.includes('--include-drafts') && existsSync(resolve('.claude', 'skills')) ? [resolve('.claude', 'skills')] : [];
+  emit({ ok: true, ...exportClaude({ studioDir, studioName: name, target: to, extraFlows, force: args.includes('--force') }) });
+} catch (error) {
+  emit({ ok: false, error: error.message });
+  process.exitCode = 1;
+}
