@@ -132,12 +132,9 @@ const SCAFFOLD = fileURLToPath(new URL('../templates/studio-rules/', import.meta
 const scaffold = (name) => readFileSync(join(SCAFFOLD, name), 'utf8');
 const RULE_FILES = ['naming.md', 'motion-system.md', 'protected.md', 'delivery.md', 'drive.md'];
 
-test('the scaffold has a valid plugin manifest and an index skill with the required frontmatter', () => {
-  const manifest = JSON.parse(scaffold('.claude-plugin/plugin.json'));
-  assert.equal(manifest.name, 'studio-rules');
-  const front = parseFrontmatter(scaffold('skills/studio-rules/SKILL.md'));
-  for (const key of ['name', 'description', 'model']) assert.ok(front[key], key);
-  assert.equal(front.name, 'studio-rules');
+test('the scaffold is a plain folder: no plugin manifest, no catalog, no skill', () => {
+  for (const path of ['.claude-plugin', 'skills']) assert.ok(!existsSync(join(SCAFFOLD, path)), `${path} must not exist`);
+  assert.ok(existsSync(join(SCAFFOLD, 'INDEX.md')));
 });
 
 test('every rule file starts as a draft with the confirmation fields', () => {
@@ -150,13 +147,14 @@ test('every rule file starts as a draft with the confirmation fields', () => {
 });
 
 test('the index lists every rule file, every folder, and the steps that read them (spec section 10)', () => {
-  const text = scaffold('skills/studio-rules/SKILL.md');
+  const text = scaffold('INDEX.md');
   for (const name of RULE_FILES) assert.ok(text.includes(`rules/${name}`), name);
   for (const item of ['rules/project-template/', 'rules/checks/', 'flows/', 'CHANGELOG.md']) assert.ok(text.includes(item), item);
   for (const row of [/naming\.md.*\| plan, build, check, deliver \|/, /project-template.*\| intake, build \|/, /motion-system.*\| plan, build \|/, /protected\.md.*\| plan, build, check \|/, /delivery\.md.*\| plan, deliver \|/, /drive\.md.*\| deliver, publish-flow \|/, /checks\/.*\| check \|/, /flows\/.*\| intake \|/]) assert.match(text, row);
   assert.match(text, /status: draft/);
   assert.match(text, /Never turn a draft into `confirmed` yourself/);
-  assert.ok(text.includes('${CLAUDE_PLUGIN_ROOT}/rules/'));
+  assert.ok(text.includes('`rules/` folder next to this file'));
+  assert.ok(!text.includes('CLAUDE_PLUGIN_ROOT'));
 });
 
 test('the version pattern in naming.md is accepted by aep-version and finds the version in a typical name', () => {
@@ -183,45 +181,22 @@ test('the scaffold has the changelog, the readme, the flows folder and the proje
   assert.match(scaffold('README.md'), /init-rules/);
 });
 
-test('the scaffold is also its own catalog: one plugin, same name, relative source', () => {
-  const plugin = JSON.parse(scaffold('.claude-plugin/plugin.json'));
-  const catalog = JSON.parse(scaffold('.claude-plugin/marketplace.json'));
-  assert.equal(catalog.plugins.length, 1);
-  assert.equal(catalog.plugins[0].name, plugin.name, 'entry name equals the manifest name');
-  assert.equal(catalog.plugins[0].source, './');
-  assert.ok(catalog.owner.name);
-});
-
-test('the readme explains the local install, one studio per project, and the unique plugin name', () => {
+test('the readme explains the studios folder, one studio per project, and sharing with git', () => {
   const text = scaffold('README.md');
-  for (const phrase of ['/plugin marketplace add', '--scope project', '<studio>-rules', 'freelancer', 'never at user scope', '/reload-plugins']) assert.ok(text.includes(phrase), phrase);
+  for (const phrase of ['~/Documents/studios/<studio>/', 'mf-studio dir', '.motion/studio.json', 'freelancer', 'git pull', 'outside Google Drive']) assert.ok(text.includes(phrase), phrase);
+  for (const phrase of ['/plugin marketplace', 'claude plugin install']) assert.ok(!text.includes(phrase), `no ${phrase}`);
 });
 
-test('init-rules tells the agent to give the plugin a unique <slug>-rules name in the manifest and the catalog', () => {
+test('init-rules works in the studio folder inside the studios folder and writes English rules', () => {
   const text = readFileSync(fileURLToPath(new URL('../skills/init-rules/SKILL.md', import.meta.url)), 'utf8');
-  for (const phrase of ['<slug>-rules', 'marketplace.json', 'unique on this computer', 'must not start with `claude` or `anthropic`', 'Write the rule files in **English**']) assert.ok(text.includes(phrase), phrase);
+  for (const phrase of ['mf-studio dir', 'direct subfolder of the studios folder', 'INDEX.md', 'no plugin manifest and no marketplace', 'Write the rule files in **English**']) assert.ok(text.includes(phrase), phrase);
+  assert.ok(!text.includes('marketplace.json'));
 });
 
-test('init-project asks which studio rules apply and explains the one-time install', () => {
+test('init-project offers the studios found in the studios folder and needs no install', () => {
   const text = readFileSync(fileURLToPath(new URL('../skills/init-project/SKILL.md', import.meta.url)), 'utf8');
-  for (const phrase of ['--rules', '--no-rules', 'claude plugin install', 'exactly one studio']) assert.ok(text.includes(phrase), phrase);
-});
-
-test('after the init-rules renames, the scaffold passes claude plugin validate (when the CLI is available)', (t) => {
-  const probe = spawnSync('claude', ['--version'], { encoding: 'utf8' });
-  if (probe.status !== 0) return t.skip('the claude CLI is not installed');
-  const dir = mkdtempSync(join(tmpdir(), 'mf-scaffold-'));
-  try {
-    cpSync(SCAFFOLD, dir, { recursive: true });
-    for (const name of ['plugin.json', 'marketplace.json']) {
-      const file = join(dir, '.claude-plugin', name);
-      writeFileSync(file, readFileSync(file, 'utf8').replaceAll('"name": "studio-rules"', '"name": "acme-rules"').replaceAll('<studio name>', 'Acme'));
-    }
-    for (const target of [dir, join(dir, '.claude-plugin', 'plugin.json')]) {
-      const result = spawnSync('claude', ['plugin', 'validate', target], { encoding: 'utf8' });
-      assert.equal(result.status, 0, `${target}\n${result.stdout}${result.stderr}`);
-    }
-  } finally { rmSync(dir, { recursive: true, force: true }); }
+  for (const phrase of ['--studio', '--no-studio', 'mf-studio list', 'exactly one studio']) assert.ok(text.includes(phrase), phrase);
+  for (const phrase of ['claude plugin install', 'claude plugin list']) assert.ok(!text.includes(phrase), `no ${phrase}`);
 });
 
 test('the task, plan and check templates carry the criteria columns and rows the gate traces', () => {

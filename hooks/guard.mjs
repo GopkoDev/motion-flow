@@ -521,9 +521,6 @@ class Guard {
     if (args.includes('--drive') && existsSync(join(project, '.motion', 'drive.json'))) {
       this.verdict.add('ask', 'mf-init --drive changes which Google Drive folders this project may read. Confirm only if the designer chose exactly this.');
     }
-    if (args.includes('--rules') && existsSync(join(project, '.claude', 'settings.json'))) {
-      this.verdict.add('ask', 'mf-init --rules edits the project settings.json (it enables a studio rules plugin). Confirm only if the designer chose this studio.');
-    }
   }
 
   isSanctionedDriveGate(rawName) {

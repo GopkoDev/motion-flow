@@ -213,7 +213,7 @@ const FLOW_SKILL_REQUIRED = {
   'refine-flow': [
     ['mf-flow bump', 'must raise the version with "mf-flow bump"'],
     ['mf-flow check', 'must check the flow with "mf-flow check"'],
-    ['Never edit an installed studio-rules copy', 'must never edit an installed studio-rules copy'],
+    ['Never edit the studio rules folder', 'must never edit the studio rules folder from a project'],
   ],
   'publish-flow': [
     ['mf-flow check', 'must check the flow with "mf-flow check"'],

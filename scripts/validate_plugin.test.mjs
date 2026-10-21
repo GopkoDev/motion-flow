@@ -229,7 +229,7 @@ test('intake and check must use an independent pass', () => {
 
 const FLOW_SKILL_TEXT = {
   'new-flow': 'mf-flow check. mf-gate archive --park. mf-gate restore. Ask to save every open After Effects project.',
-  'refine-flow': 'mf-flow bump. mf-flow check. Never edit an installed studio-rules copy.',
+  'refine-flow': 'mf-flow bump. mf-flow check. Never edit the studio rules folder from a project.',
   'publish-flow': 'mf-flow check. mf-flow pack. Never write, copy or move anything on Drive. Never mark a flow `reviewed` or `approved`.',
   'whats-new': 'mf-whatsnew. last_seen_rules_version.',
 };

@@ -1,8 +1,0 @@
-{
-  "name": "studio-rules",
-  "version": "0.1.0",
-  "description": "Studio rules (naming, motion system, protected, delivery, Drive) and approved flows for motion-flow.",
-  "author": {
-    "name": "<studio name>"
-  }
-}

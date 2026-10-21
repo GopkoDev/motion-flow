@@ -9,7 +9,7 @@ A [Claude Code](https://claude.com/claude-code) plugin that gives a motion team 
 - **Human in the loop, enforced in code.** Two approvals (after the plan and after the check) are real gates (`mf-gate`), not polite suggestions in a prompt.
 - **Originals are never touched.** The agent works only on copies inside `work/`. Google Drive is read-only and reachable only through a small allowlisted tool (`drive-gate`). Nothing is written to Drive, nothing is deleted.
 - **After Effects is driven by plain JSX scripts** run through one launcher (`ae-run`). No MCP server, no background service.
-- **Studio rules live apart from the engine.** Naming, motion system, delivery formats and "do not touch" lists are a separate plugin per studio, so one engine serves many studios.
+- **Studio rules live apart from the engine.** Naming, motion system, delivery formats and "do not touch" lists are a plain folder per studio (no plugin to install), so one engine serves many studios.
 - **Designers create their own flows.** A repeatable job ("resize for all social formats") is taught to the agent by interview and example, rehearsed on a copy, and published for review.
 
 > Status: milestones M0–M5 are implemented and covered by 400+ automated tests that need no After Effects. The parts that need a real After Effects (launching scripts, rendering frames) are written but still waiting for a manual check on a machine with AE. No license has been chosen yet. See [Status](#status).
@@ -69,7 +69,7 @@ flowchart LR
         TL["tools: ae-run, ae-dump, ae-render-frame, ae-lint,<br/>drive-gate, mf-gate, mf-flow, ..."]
         HK["guard hook + deny rules"]
     end
-    subgraph RULES["<studio>-rules (private plugin, one per studio)"]
+    subgraph RULES["~/Documents/studios/&lt;studio&gt; (a plain folder, one per studio)"]
         R["rules: naming, motion-system, protected, delivery, drive, checks"]
         F["flows: approved repeatable jobs"]
     end
@@ -137,7 +137,7 @@ claude plugin marketplace add ~/tools/motion-flow
 claude plugin install motion-flow@motion --scope project
 ```
 
-Scopes: use `project` for the shared setup, `local` for your own experiments, and avoid `user` for studio rules plugins (see [Studio rules](#studio-rules-and-flows)).
+Scopes: use `project` for the shared setup, `local` for your own experiments, and studio rules are not plugins any more (see [Studio rules](#studio-rules-and-flows)).
 
 After installing, the tools in `bin/` (`mf-gate`, `ae-run`, ...) are on the `PATH` inside Claude Code sessions, and the slash commands appear as `/motion-flow:<name>`.
 
@@ -157,7 +157,7 @@ After installing, open a terminal in a project folder outside Drive, start `clau
 /motion-flow:go make a 9:16 version of the spring title, 12 seconds
 ```
 
-The first time in a project, `go` asks three things once: **Google Drive** (none, or which folders), the **studio's rules** (none, or the plugin), and the **mode**. It sets the project up, remembers the answers, and runs intake, plan, build, check and deliver in a row. Next time you type `/motion-flow:go` it already knows the mode, Drive and rules, reads `mf-gate status`, and continues where the task stopped.
+The first time in a project, `go` asks three things once: **Google Drive** (none, or which folders), the **studio** (none, or one of the folders in your studios folder), and the **mode**. It sets the project up, remembers the answers, and runs intake, plan, build, check and deliver in a row. Next time you type `/motion-flow:go` it already knows the mode, Drive and rules, reads `mf-gate status`, and continues where the task stopped.
 
 | Mode | What happens |
 |---|---|
@@ -185,13 +185,14 @@ Created (nothing existing is overwritten):
 
 | Path | Purpose |
 |---|---|
-| `.claude/settings.json` | Safety rules for this project (deny and ask lists), the plugins enabled for it. |
+| `.claude/settings.json` | Safety rules for this project (deny and ask lists), the plugin enabled for it, read access to your studios folder. |
+| `.motion/studio.json` | Which studio's rules this project uses (by name). |
 | `CLAUDE.md` | Short instructions for the agent. It tells the agent to answer you in Ukrainian. |
 | `.gitignore` lines | Keeps `work/` and `.motion/state.json` out of git. |
 | `.motion/state.json`, `.motion/drive.json` | Small state files (what you last read, which Drive folders this project may use). |
 | `work/` | The only place the agent writes. |
 
-If you picked a studio, it also prints the one-time command to install that studio's rules plugin on this computer. Run `/motion-flow:doctor` afterwards to confirm everything is green.
+If you picked a studio, the project may read (never edit) the studios folder. Run `/motion-flow:doctor` afterwards to confirm everything is green.
 
 ## Daily workflow
 
@@ -218,10 +219,10 @@ All commands are Claude Code skills, called as `/motion-flow:<name>`. You can al
 
 | Command | What it does | When to run it | Runs after / hands off to |
 |---|---|---|---|
-| `/motion-flow:doctor` | Checks Node, ffmpeg, After Effects, whisper, the Drive config, the project's safety settings, the studio rules plugin and plugin versions. Prints a table with install commands. Installs nothing. Can also ping After Effects with a real test script. | First thing on a new computer; whenever a step fails because "a tool is missing"; after updating plugins. | Standalone. Recommends `setup` or `init-project` when it finds them missing. |
+| `/motion-flow:doctor` | Checks Node, ffmpeg, After Effects, whisper, the Drive config, the project's safety settings, the project's studio folder (and which rules are still drafts) and plugin versions. Prints a table with install commands. Installs nothing. Can also ping After Effects with a real test script. | First thing on a new computer; whenever a step fails because "a tool is missing"; after updating plugins. | Standalone. Recommends `setup` or `init-project` when it finds them missing. |
 | `/motion-flow:setup` | Finds your Google Drive for Desktop folders and records the ones you allow in `~/.motion-flow/roots.json`. The first write needs no questions; changing an existing file asks for confirmation. | Once per computer, only if you use Drive. Again when you add or change Drive folders. | After `doctor`. Hands off to `init-project`. |
 | `/motion-flow:init-project` | Prepares the current folder as a motion project: safety settings, `CLAUDE.md`, `.gitignore` lines, `.motion/`, `work/`. Asks about Drive and about the studio rules. Safe to re-run to change those choices. | Once at the start of every project. | After `setup` (if Drive). Hands off to `intake`. |
-| `/motion-flow:init-rules` | Builds the first draft of a studio's rules from 1-2 finished reference projects and an interview: naming, protected items, delivery formats, Drive layout. Everything is written as `status: draft` with `TODO: confirm` marks. | Once per studio, inside a checkout of that studio's rules folder (see [Studio rules](#studio-rules-and-flows)). | After `doctor`/`setup`. A person reads, edits and commits the drafts. |
+| `/motion-flow:init-rules` | Builds the first draft of a studio's rules from 1-2 finished reference projects and an interview: naming, protected items, delivery formats, Drive layout. Everything is written as `status: draft` with `TODO: confirm` marks. | Once per studio, inside the studio's own folder in the studios folder, `~/Documents/studios/<studio>` (see [Studio rules](#studio-rules-and-flows)). | After `doctor`/`setup`. A person reads, edits and commits the drafts. |
 
 ### The five pipeline steps
 
@@ -252,7 +253,7 @@ The skills call these tools for you; you rarely type them. They are on the `PATH
 |---|---|---|
 | `mf-doctor` | The engine behind `doctor`. `--ping-ae` runs a real script in After Effects. | `doctor` |
 | `mf-setup` | Detects Drive folders (`--detect`), validates a choice (`--dry-run`), writes `~/.motion-flow/roots.json`, shows it (`--show`). | `setup`, `init-project` |
-| `mf-init` | Creates the project files. `--dry-run` previews; `--drive a,b` or `--no-drive`; `--rules <plugin>@<catalog>` or `--no-rules`; `--update-permissions` adds the allow rules to an older `settings.json`. Never overwrites. | `init-project` |
+| `mf-init` | Creates the project files. `--dry-run` previews; `--drive a,b` or `--no-drive`; `--studio <name>` or `--no-studio`; `--update-permissions` adds the allow rules to an older `settings.json`. Never overwrites. | `init-project` |
 | `mf-gate` | Pipeline gates: `require <step>`, `hash plan`, `approve <plan\|check> [--auto]`, `auto <on\|off\|status>`, `status`, `verify <task\|plan\|check>`, `archive [--abandon\|--park]`, `restore`. | Every pipeline skill |
 | `drive-gate` | Read-only Drive access: `ls`, `info`, `fetch` (copies into `work/`, can bring a project's linked files), `log`. No write, move or delete commands exist. | `plan`, `new-flow`, `init-rules` |
 | `ae-run` | The only way to run JSX in After Effects. `--ping`; `--project`, `--script`, `--undo`, `--step`, `--timeout`, `--params`. Writes the build log. | `build`, `doctor` |
@@ -260,6 +261,7 @@ The skills call these tools for you; you rarely type them. They are on the `PATH
 | `ae-render-frame` | Renders one frame of a comp to PNG at a given time. | `check` |
 | `ae-lint` | Runs the studio's declarative checks on a dump (fps, size, names, missing media/fonts, default layer names, protected items). | `check` |
 | `aep-version` | Computes the next version name (`spring_v07.aep` → `spring_v08.aep`) without overwriting. | `build`, `deliver` |
+| `mf-studio` | Finds studio rules in the studios folder: `list`, `dir`, `path` (where the project's studio rules are). | `go`, `init-project`, every step that reads rules |
 | `mf-sum` | SHA-256 checksums for delivered files. | `deliver` |
 | `mf-flow` | `check`, `bump`, `pack` for flows (validation, version bump with changelog, deterministic zip). | `new-flow`, `refine-flow`, `publish-flow` |
 | `mf-whatsnew` | Reads a rules changelog and what you already saw. | `whats-new` |
@@ -286,23 +288,23 @@ Data privacy: the agent reads your projects and the files in `work/`, and that c
 Keep three things separate: the plugin engine (installed once, you never edit it), the rules of each studio (one folder per studio), and your projects.
 
 ```text
-~/studios/                              # one folder per studio you work for
-  acme-rules/                           # acme's rules: a plugin AND a catalog, own git repo
-    .claude-plugin/ plugin.json  marketplace.json
-    skills/studio-rules/SKILL.md
+~/Documents/studios/                    # one folder per studio you work for (outside Drive)
+  acme/                                 # acme's rules: a plain folder, own git repo if you like
+    INDEX.md
     rules/  naming.md motion-system.md protected.md delivery.md drive.md
             project-template/  checks/
     flows/                              # approved flows
     CHANGELOG.md
-  nova-rules/                           # another studio, kept separate
+  nova/                                 # another studio, kept separate
 
 ~/Projects/                             # your projects, outside Drive
   acme-spring-campaign/                 # open your terminal and run claude HERE
-    .claude/settings.json               # safety rules, plugins for this project
+    .claude/settings.json               # safety rules, plugin and studio access for this project
     CLAUDE.md
     .motion/                            # task.md plan.md check.md deliver.md,
       snapshots/  archive/  state.json  #   dumps, archived tasks, small state
       build.log.jsonl  changelog.md
+      studio.json  drive.json          #   the studio and Drive chosen for this project
     jsx/                                # generated scripts (commit them if you use git)
     work/                               # gitignored: copies, frames, exports
       spring_v07.aep   frames/   out/   .ipc/
@@ -314,20 +316,20 @@ Tips for a comfortable setup:
 
 - **One project folder per job**, one terminal per project. The agent only ever sees that folder.
 - **Keep project folders outside Google Drive.** Drive's streaming and sync fight with a tool that writes many small files. `init-project` refuses to run inside a Drive folder for this reason.
-- **Keep studio rules in their own git repo** (for example `~/studios/acme-rules`) so changes are reviewed and versioned. Install it once with `/plugin marketplace add ~/studios/acme-rules`, then `claude plugin install acme-rules@<catalog> --scope project`.
-- **One studio per project.** If you freelance for several studios, keep one rules folder per studio and enable exactly one of them in each project. `init-project` asks, and `doctor` warns if more than one is enabled.
+- **Keep studio rules in their own git repo** (for example `~/Documents/studios/acme`) so changes are reviewed and versioned. There is nothing to install: a teammate clones the repository into their studios folder, and updates are a `git pull`. Keep the studios folder outside Drive. `~/.motion-flow/studios.json` with `{"dir": "<path>"}` moves it.
+- **One studio per project.** If you freelance for several studios, keep one folder per studio and choose exactly one in each project. `go` and `init-project` list the folders they find, so a studio you have just created is selectable at once.
 - **Treat `work/` as disposable.** Anything that matters is either an original on Drive or a file you copied out of `work/out/`. After a task, `mf-gate archive` keeps its paperwork under `.motion/archive/`.
-- **Git is optional.** Use it for plugin and rules repos. In a project, commit only text (`.motion/`, `jsx/`); never `.aep`, footage or renders.
+- **Git is optional.** Use it for the plugin and the studio folders. In a project, commit only text (`.motion/`, `jsx/`); never `.aep`, footage or renders.
 - **Handy habit:** run `/motion-flow:doctor` at the start of the day on a new machine, and `/clear` between pipeline steps to keep the chat light.
 
 ## Studio rules and flows
 
-The rules plugin for a studio is created once with a scaffold shipped in this repo (`templates/studio-rules/`):
+The rules of a studio are a plain folder, created once from a scaffold shipped in this repo (`templates/studio-rules/`):
 
-1. Copy the scaffold into a new folder (for example `~/studios/acme-rules`), `git init` it, open Claude Code there.
-2. Run `/motion-flow:init-rules`. It asks the studio name and a short slug and sets the plugin name to `<slug>-rules`, then drafts the rules from your reference projects and an interview.
+1. Create `~/Documents/studios/<slug>` (a short lowercase name such as `acme`), `git init` it if you want to share it, and open Claude Code there.
+2. Run `/motion-flow:init-rules`. It copies the scaffold, then drafts the rules from your reference projects and an interview.
 3. A person reads each rule, fixes it, sets `status: confirmed` and commits. Until then, steps warn that they are reading a `draft`.
-4. Everyone on the team installs the rules plugin once per computer and enables it per project via `init-project`.
+4. Every project picks the studio by name, once, in `go` (first run) or `init-project`. The team clones the same folder into their own studios folder.
 
 How a flow gets from one designer to the whole team:
 
@@ -339,7 +341,7 @@ flowchart LR
     ZIP -->|designer copies by hand| PEND[("_flows-pending/ on Drive")]
     PEND --> REV{"Reviewer<br/>reads the flow against safety.md,<br/>runs mf-flow check"}
     REV -->|approved| REPO["flows/ in the rules repo<br/>+ CHANGELOG entry, commit"]
-    REPO --> UPD["Team updates the rules plugin"]
+    REPO --> UPD["Team runs git pull in the studio folder"]
     UPD --> WN["/motion-flow:whats-new"]
     WN -.->|used, fixed by hand| RF["/motion-flow:refine-flow<br/>version bump, back to draft"]
     RF --> PU
@@ -356,7 +358,7 @@ flowchart LR
 | `ae-run --ping` times out | Check that After Effects is installed, that the script-access setting is on, and that no modal dialog is open in AE. |
 | A permission prompt appears for `rm`, `git push`, a Drive path | Intended. Read it and approve only if you expect it. A direct Drive path or a launch of AE outside the tools is blocked outright. |
 | `project settings.json not found` in `doctor` | Run `/motion-flow:init-project` in the project folder. |
-| Rules plugin shows as not installed | Run the install command printed by `init-project`: `claude plugin install <plugin>@<catalog> --scope project`. |
+| `doctor` says the project's studio folder is missing | The project names a studio that is not in the studios folder (`mf-studio dir`). Put the folder there, or choose another studio with `init-project`. |
 
 ## Development
 
